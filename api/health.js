@@ -1,7 +1,7 @@
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    res.status(200).json({ 
+    return res.status(200).json({ 
         status: 'ok', 
         timestamp: new Date().toISOString(),
         hasApiKey: !!process.env.OPENAI_API_KEY

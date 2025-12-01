@@ -68,15 +68,32 @@ export default function handler(req, res) {
         amount: amount
     });
 
-    // Build simple UPI URL (most compatible format)
-    const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${amount}&cu=INR`;
+    // Build UPI URLs - multiple formats for maximum compatibility
+    const upiParams = `pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${amount}&cu=INR`;
+    
+    // Standard UPI URL (opens system app chooser)
+    const upiUrl = `upi://pay?${upiParams}`;
 
     return res.status(200).json({
         success: true,
         data: {
             amount: amount,
             upiId: upiId,
-            upiUrl: upiUrl,
+            urls: {
+                // GPay URLs - multiple formats for old/new versions
+                gpay1: `tez://upi/pay?${upiParams}`,           // Old GPay (Tez) - India
+                gpay2: `gpay://upi/pay?${upiParams}`,          // GPay scheme
+                gpay3: `upi://pay?${upiParams}`,               // Standard UPI (GPay responds)
+                
+                // PhonePe
+                phonepe: `phonepe://pay?${upiParams}`,
+                
+                // Paytm
+                paytm: `paytmmp://pay?${upiParams}`,
+                
+                // Generic UPI (app chooser)
+                upi: upiUrl
+            },
             token: paymentToken,
             expiresIn: TOKEN_EXPIRY
         }

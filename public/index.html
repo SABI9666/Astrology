@@ -16,6 +16,8 @@
             --white: #f8f4ff;
             --green: #4CAF50;
             --red: #f44336;
+            --orange: #ff9800;
+            --whatsapp: #25D366;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -153,6 +155,14 @@
             background: linear-gradient(135deg, var(--green), #388E3C);
             color: white;
         }
+        .btn-whatsapp {
+            background: linear-gradient(135deg, var(--whatsapp), #128C7E);
+            color: white;
+        }
+        .btn-orange {
+            background: linear-gradient(135deg, var(--orange), #e65100);
+            color: white;
+        }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--gold);
@@ -198,6 +208,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow-y: auto;
         }
         .modal.active { display: flex; }
         .modal-card {
@@ -208,6 +219,8 @@
             max-width: 380px;
             width: 100%;
             text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-icon { font-size: 3rem; margin-bottom: 10px; }
         .modal-title {
@@ -308,7 +321,7 @@
         .verify-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, var(--green), #388E3C);
+            background: linear-gradient(135deg, var(--whatsapp), #128C7E);
             border: none;
             border-radius: 10px;
             color: white;
@@ -316,6 +329,10 @@
             font-size: 1rem;
             cursor: pointer;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         .cancel-btn {
             width: 100%;
@@ -337,6 +354,43 @@
             font-size: 0.8rem;
             color: #ff9999;
         }
+        .info-box {
+            background: rgba(37,211,102,0.1);
+            border: 1px solid rgba(37,211,102,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #a5d6a7;
+        }
+
+        /* Waiting Modal */
+        .waiting-box {
+            background: rgba(255,152,0,0.1);
+            border: 1px solid rgba(255,152,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .waiting-icon {
+            font-size: 3rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+        .status-pending { background: var(--orange); color: #000; }
+        .status-approved { background: var(--green); color: #fff; }
+        .status-rejected { background: var(--red); color: #fff; }
 
         /* Results */
         .results { display: none; }
@@ -438,6 +492,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- Step 1: Payment Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-card">
             <div class="modal-icon">🔮</div>
@@ -476,11 +531,50 @@
             </p>
 
             <div class="warning">
-                ⚠️ Click verify ONLY after payment is successful
+                ⚠️ Click below ONLY after payment is successful
             </div>
 
-            <button class="verify-btn" id="verifyBtn">✓ I Have Paid - Verify & WhatsApp</button>
+            <button class="verify-btn" id="verifyBtn">
+                <span>📱</span>
+                <span>I Have Paid → Send to WhatsApp</span>
+            </button>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Waiting for Approval Modal -->
+    <div class="modal" id="waitingModal">
+        <div class="modal-card">
+            <div class="waiting-icon">⏳</div>
+            <h2 class="modal-title">Waiting for Approval</h2>
+            
+            <div class="waiting-box">
+                <p style="margin-bottom: 10px;">Your verification request has been sent!</p>
+                <p style="font-size: 0.85rem; opacity: 0.8;">
+                    Our admin will verify your payment and approve your request. This usually takes a few minutes.
+                </p>
+            </div>
+
+            <div id="statusDisplay">
+                <span class="status-badge status-pending">PENDING</span>
+            </div>
+
+            <p id="waitingName" style="color: var(--gold); margin: 10px 0;"></p>
+            <p id="verificationIdDisplay" style="font-family: monospace; font-size: 0.75rem; opacity: 0.6; word-break: break-all;"></p>
+
+            <div class="info-box">
+                💡 Make sure you sent the WhatsApp message to complete verification!
+            </div>
+
+            <button class="btn btn-green" id="checkStatusBtn" style="margin-top: 15px;">
+                🔄 Check Approval Status
+            </button>
+
+            <button class="btn btn-whatsapp" id="resendWhatsAppBtn" style="margin-top: 10px;">
+                📱 Resend WhatsApp Message
+            </button>
+
+            <button class="cancel-btn" id="cancelWaitingBtn">Start Over</button>
         </div>
     </div>
 
@@ -582,21 +676,13 @@
     </div>
 
     <script>
-        // --- LOGIC: Check for saved reading immediately on load ---
-        const savedReading = localStorage.getItem('celestialReading');
-        if (savedReading) {
-            try {
-                const d = JSON.parse(savedReading);
-                showResults(d);
-            } catch (e) {
-                localStorage.removeItem('celestialReading');
-            }
-        }
-
+        // --- STATE MANAGEMENT ---
         let selectedTags = [];
         let userData = null;
         let paymentToken = null;
-        let gpayUrls = []; 
+        let verificationId = null;
+        let whatsappUrl = null;
+        let gpayUrls = [];
 
         const questionMap = {
             marriage: "Marriage predictions - when will I marry, partner details",
@@ -610,6 +696,39 @@
             foreign: "Foreign travel and settlement chances",
             business: "Business success predictions"
         };
+
+        // --- CHECK FOR SAVED DATA ON LOAD ---
+        (function init() {
+            // Check for saved reading
+            const savedReading = localStorage.getItem('celestialReading');
+            if (savedReading) {
+                try {
+                    const d = JSON.parse(savedReading);
+                    showResults(d);
+                    return;
+                } catch (e) {
+                    localStorage.removeItem('celestialReading');
+                }
+            }
+
+            // Check for pending verification
+            const pendingVerification = localStorage.getItem('pendingVerification');
+            if (pendingVerification) {
+                try {
+                    const pending = JSON.parse(pendingVerification);
+                    verificationId = pending.verificationId;
+                    whatsappUrl = pending.whatsappUrl;
+                    userData = pending.userData;
+                    
+                    document.getElementById('waitingName').textContent = userData.name;
+                    document.getElementById('verificationIdDisplay').textContent = 'ID: ' + verificationId;
+                    document.getElementById('waitingModal').classList.add('active');
+                    document.getElementById('inputCard').style.display = 'none';
+                } catch (e) {
+                    localStorage.removeItem('pendingVerification');
+                }
+            }
+        })();
 
         // Create stars
         (function() {
@@ -688,16 +807,24 @@
             setTimeout(() => e.classList.remove('active'), 5000);
         }
 
-        // Form submit
+        // Form submit - Step 1: Get Payment Details
         document.getElementById('mainForm').onsubmit = async function(e) {
             e.preventDefault();
 
-            // Check if there is already a saved reading
+            // Check for saved reading
             if (localStorage.getItem('celestialReading')) {
                 if (!confirm("You have a saved reading. Starting a new one requires new payment. Continue?")) {
                     return;
                 }
                 localStorage.removeItem('celestialReading');
+            }
+
+            // Check for pending verification
+            if (localStorage.getItem('pendingVerification')) {
+                if (!confirm("You have a pending verification. Starting new will lose it. Continue?")) {
+                    return;
+                }
+                localStorage.removeItem('pendingVerification');
             }
 
             const name = document.getElementById('name').value.trim();
@@ -710,11 +837,19 @@
                 return;
             }
 
+            let questions = selectedTags.map(t => questionMap[t] || '').join(' ');
+            const customQ = document.getElementById('customQ').value.trim();
+            if (customQ) questions += ' ' + customQ;
+            if (!questions) questions = 'Complete life reading';
+
             userData = {
-                name, birthDate: dob, birthTime: tob, birthPlace: pob,
+                name, 
+                birthDate: dob, 
+                birthTime: tob, 
+                birthPlace: pob,
                 language: document.getElementById('language').value,
                 gender: document.getElementById('gender').value,
-                customQ: document.getElementById('customQ').value.trim()
+                questions: questions
             };
 
             document.getElementById('loading').classList.add('active');
@@ -757,15 +892,15 @@
             });
         };
 
-        // Cancel
+        // Cancel Payment Modal
         document.getElementById('cancelBtn').onclick = function() {
             document.getElementById('paymentModal').classList.remove('active');
             paymentToken = null;
         };
 
-        // --- VERIFY + WHATSAPP LOGIC ---
+        // --- STEP 2: VERIFY BUTTON - SEND TO WHATSAPP ---
         document.getElementById('verifyBtn').onclick = async function() {
-            if (!paymentToken) {
+            if (!paymentToken || !userData) {
                 showToast('Payment session expired. Try again.');
                 document.getElementById('paymentModal').classList.remove('active');
                 return;
@@ -773,19 +908,15 @@
 
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('loading').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Verifying & Generating Reading...';
-
-            let questions = selectedTags.map(t => questionMap[t] || '').join(' ');
-            if (userData.customQ) questions += ' ' + userData.customQ;
-            if (!questions) questions = 'Complete life reading';
+            document.getElementById('loadingText').textContent = 'Creating verification request...';
 
             try {
-                const res = await fetch('/api/reading', {
+                // Create verification request
+                const res = await fetch('/api/verify-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...userData,
-                        questions: questions,
                         paymentToken: paymentToken
                     })
                 });
@@ -793,30 +924,147 @@
                 const result = await res.json();
 
                 if (!result.success) {
-                    throw new Error(result.message || 'Payment verification failed');
+                    throw new Error(result.message || 'Failed to create verification');
                 }
 
-                // 1. Send WhatsApp Message (in background/new tab)
-                const waMessage = `I have paid for Astrological Reading.\nName: ${userData.name}\nToken: ${paymentToken}`;
-                const waUrl = `https://wa.me/917907691760?text=${encodeURIComponent(waMessage)}`;
-                
-                // Open WhatsApp immediately
-                window.open(waUrl, '_blank');
+                verificationId = result.data.verificationId;
+                whatsappUrl = result.data.whatsappUrl;
 
-                // 2. Save result to LocalStorage for "Anytime" access
-                const dataToSave = result.data;
-                localStorage.setItem('celestialReading', JSON.stringify(dataToSave));
+                // Save pending verification to localStorage
+                localStorage.setItem('pendingVerification', JSON.stringify({
+                    verificationId,
+                    whatsappUrl,
+                    userData,
+                    created: Date.now()
+                }));
 
-                // 3. Show Results
-                showResults(dataToSave);
+                // Open WhatsApp
+                window.open(whatsappUrl, '_blank');
 
-                paymentToken = null; 
+                // Show waiting modal
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('waitingName').textContent = userData.name;
+                document.getElementById('verificationIdDisplay').textContent = 'ID: ' + verificationId;
+                document.getElementById('inputCard').style.display = 'none';
+                document.getElementById('waitingModal').classList.add('active');
+
+                showToast('WhatsApp opened! Please send the message.');
+                paymentToken = null;
 
             } catch (err) {
-                showError(err.message || 'Verification failed. Please try again.');
-            } finally {
                 document.getElementById('loading').classList.remove('active');
+                showError(err.message || 'Failed to create verification');
             }
+        };
+
+        // --- STEP 3: CHECK STATUS BUTTON ---
+        document.getElementById('checkStatusBtn').onclick = async function() {
+            if (!verificationId) {
+                showToast('No verification found');
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = '🔄 Checking...';
+
+            try {
+                // First check if approved
+                const statusRes = await fetch(`/api/verify-request?id=${verificationId}`);
+                const statusResult = await statusRes.json();
+
+                if (!statusResult.success) {
+                    throw new Error(statusResult.message || 'Failed to check status');
+                }
+
+                const status = statusResult.data.status;
+
+                // Update status display
+                const statusDisplay = document.getElementById('statusDisplay');
+                if (status === 'pending') {
+                    statusDisplay.innerHTML = '<span class="status-badge status-pending">⏳ PENDING</span>';
+                    showToast('Still waiting for admin approval...');
+                } else if (status === 'approved' || status === 'completed') {
+                    statusDisplay.innerHTML = '<span class="status-badge status-approved">✓ APPROVED!</span>';
+                    showToast('Approved! Generating your reading...');
+                    
+                    // Generate reading
+                    await generateReading();
+                } else if (status === 'rejected') {
+                    statusDisplay.innerHTML = '<span class="status-badge status-rejected">✕ REJECTED</span>';
+                    showToast('Payment was rejected. Please contact support.');
+                }
+
+            } catch (err) {
+                showToast(err.message || 'Error checking status');
+            } finally {
+                this.disabled = false;
+                this.textContent = '🔄 Check Approval Status';
+            }
+        };
+
+        // Generate Reading after approval
+        async function generateReading() {
+            document.getElementById('waitingModal').classList.remove('active');
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Generating your personalized reading...';
+
+            try {
+                const res = await fetch('/api/reading', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ verificationId })
+                });
+
+                const result = await res.json();
+
+                if (!result.success) {
+                    if (result.status === 'pending') {
+                        document.getElementById('loading').classList.remove('active');
+                        document.getElementById('waitingModal').classList.add('active');
+                        showToast('Still waiting for approval...');
+                        return;
+                    }
+                    throw new Error(result.message || 'Failed to generate reading');
+                }
+
+                // Save reading and clear pending
+                localStorage.setItem('celestialReading', JSON.stringify(result.data));
+                localStorage.removeItem('pendingVerification');
+
+                // Show results
+                showResults(result.data);
+
+            } catch (err) {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('waitingModal').classList.add('active');
+                showToast(err.message || 'Error generating reading');
+            }
+        }
+
+        // Resend WhatsApp
+        document.getElementById('resendWhatsAppBtn').onclick = function() {
+            if (whatsappUrl) {
+                window.open(whatsappUrl, '_blank');
+                showToast('WhatsApp opened!');
+            } else {
+                showToast('No WhatsApp message found');
+            }
+        };
+
+        // Cancel Waiting - Start Over
+        document.getElementById('cancelWaitingBtn').onclick = function() {
+            if (!confirm('Are you sure? You will need to pay again.')) return;
+            
+            localStorage.removeItem('pendingVerification');
+            verificationId = null;
+            whatsappUrl = null;
+            userData = null;
+            
+            document.getElementById('waitingModal').classList.remove('active');
+            document.getElementById('inputCard').style.display = 'block';
+            document.getElementById('mainForm').reset();
+            selectedTags = [];
+            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
         };
 
         // Helper to render results
@@ -834,6 +1082,8 @@
                 .replace(/\n/g, '<br>');
             document.getElementById('readingContent').innerHTML = '<p>' + html + '</p>';
 
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('waitingModal').classList.remove('active');
             document.getElementById('inputCard').style.display = 'none';
             document.getElementById('results').classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -841,10 +1091,14 @@
 
         // New reading - CLEARS SAVED DATA
         document.getElementById('newBtn').onclick = function() {
-            // Confirm reset
-            if(!confirm("This will clear your current reading and require a new payment. Continue?")) return;
+            if (!confirm("This will clear your current reading and require a new payment. Continue?")) return;
 
-            localStorage.removeItem('celestialReading'); // Clear storage
+            localStorage.removeItem('celestialReading');
+            localStorage.removeItem('pendingVerification');
+            
+            verificationId = null;
+            whatsappUrl = null;
+            userData = null;
             
             document.getElementById('results').classList.remove('active');
             document.getElementById('inputCard').style.display = 'block';

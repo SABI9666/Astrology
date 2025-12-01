@@ -1,4 +1,4 @@
-// Payment API - Minimal UPI params (fixes limit error)
+// Payment API - sends to test page
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +14,6 @@ export default function handler(req, res) {
     const upiId = process.env.UPI_ID;
     const upiName = process.env.UPI_NAME || 'Payment';
     
-    // Amount - clean integer only
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
     const amount = Math.floor(parseFloat(rawAmount)).toString();
 
@@ -22,23 +21,18 @@ export default function handler(req, res) {
         return res.status(500).json({ success: false, message: 'Payment not configured' });
     }
 
-    // Get host
     const host = req.headers.host;
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // MINIMAL UPI URL - only essential params
-    // Format: upi://pay?pa=UPI_ID&am=AMOUNT&cu=INR
-    // Skip pn (payee name) as it can cause issues
-    
-    const minimalParams = 'pa=' + upiId + '&am=' + amount + '&cu=INR';
-    
-    // All use same upi:// scheme (most compatible)
+    // All buttons go to same test page
+    const testUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + '&am=' + amount;
+
     const urls = {
-        upi: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
-        gpay: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
-        phonepe: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
-        paytm: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount
+        upi: testUrl,
+        gpay: testUrl,
+        phonepe: testUrl,
+        paytm: testUrl
     };
 
     return res.status(200).json({

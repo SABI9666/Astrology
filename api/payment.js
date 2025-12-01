@@ -1,42 +1,35 @@
-// Payment API - Fixed amount format for GPay
-
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Cache-Control', 'no-store');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'GET') {
-        return res.status(405).json({ success: false, message: 'Method not allowed' });
-    }
 
     const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'CelestialOracle';
-    
-    // Get amount as INTEGER - no decimals
-    const rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = parseInt(rawAmount, 10).toString(); // Ensures "100" not "100.00"
+    const upiName = process.env.UPI_NAME || 'Celestial Oracle';
 
-    if (!upiId || !upiId.includes('@')) {
-        return res.status(500).json({ success: false, message: 'Payment not configured' });
-    }
+    const amount = "100"; // fixed amount
 
-    // Clean payee name - alphanumeric only, no spaces
-    const cleanName = upiName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 15);
+    // Keep payee name clean BUT allow spaces
+    const cleanName = upiName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 25);
 
-    // Build UPI URLs - SIMPLE format only
-    const upiUrl = 'upi://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR';
-    const gpayUrl = 'tez://upi/pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR';
-    const phonepeUrl = 'phonepe://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR';
-    const paytmUrl = 'paytmmp://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR';
+    // Generate unique transaction ID
+    const txid = 'TXN' + Date.now();
+
+    const upiParams =
+        `pa=${upiId}` +
+        `&pn=${encodeURIComponent(cleanName)}` +
+        `&am=${amount}` +
+        `&cu=INR` +
+        `&tr=${txid}` +
+        `&tn=Astrology Reading`;
+
+    const upiUrl = 'upi://pay?' + upiParams;
+    const gpayUrl = 'tez://upi/pay?' + upiParams;
+    const phonepeUrl = 'phonepe://pay?' + upiParams;
+    const paytmUrl = 'paytmmp://pay?' + upiParams;
 
     return res.status(200).json({
         success: true,
         data: {
-            amount: amount,
-            upiId: upiId,
+            amount,
+            upiId,
             upiName: cleanName,
             urls: {
                 upi: upiUrl,
@@ -47,13 +40,3 @@ export default function handler(req, res) {
         }
     });
 }
-
-
-
-
-
-
-
-
-
-

@@ -33,13 +33,17 @@
         color: #4CAF50;
         margin: 12px 0;
     }
-    .upi-id {
+    .upi-box {
         background: rgba(0,0,0,0.3);
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-family: monospace;
-        color: #D4AF37;
+        padding: 12px 15px;
+        border-radius: 10px;
         margin: 15px 0;
+    }
+    .upi-label { font-size: 0.7rem; color: #888; margin-bottom: 5px; }
+    .upi-id {
+        font-family: monospace;
+        font-size: 1.1rem;
+        color: #D4AF37;
         word-break: break-all;
     }
     .info {
@@ -52,16 +56,6 @@
         color: #a5d6a7;
         line-height: 1.5;
     }
-    .warning {
-        background: rgba(255,152,0,0.1);
-        border: 1px solid rgba(255,152,0,0.3);
-        border-radius: 10px;
-        padding: 12px;
-        margin: 15px 0;
-        font-size: 0.8rem;
-        color: #ffcc80;
-        line-height: 1.5;
-    }
     .btn {
         display: block;
         width: 100%;
@@ -72,15 +66,14 @@
         cursor: pointer;
         text-decoration: none;
         text-align: center;
-        margin: 10px 0;
+        margin: 8px 0;
         border: none;
     }
-    .btn-green { background: linear-gradient(135deg, #4CAF50, #388E3C); color: #fff; }
     .btn-blue { background: linear-gradient(135deg, #4285F4, #1976D2); color: #fff; }
     .btn-purple { background: linear-gradient(135deg, #5f259f, #7c3aed); color: #fff; }
     .btn-cyan { background: linear-gradient(135deg, #00BAF2, #0078D4); color: #fff; }
     .btn-orange { background: linear-gradient(135deg, #ff9800, #e65100); color: #fff; }
-    .btn-gold { background: linear-gradient(135deg, #D4AF37, #c9a227); color: #000; }
+    .btn-green { background: linear-gradient(135deg, #4CAF50, #388E3C); color: #fff; }
     .btn-outline {
         background: transparent;
         border: 1px solid rgba(212,175,55,0.5);
@@ -102,136 +95,48 @@
         background: rgba(212,175,55,0.2);
     }
     .divider span { padding: 0 12px; }
-    .methods { margin: 15px 0; }
-    .methods-title { 
-        font-size: 0.8rem; 
-        color: #aaa; 
-        margin-bottom: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
+    .note { font-size: 0.75rem; color: #888; margin-top: 10px; }
 </style>
 </head>
 <body>
-    <div class="card" id="card">
-        <div class="icon">💳</div>
-        <h2>Pay to Complete</h2>
-        <div class="amount" id="amtDisplay">₹100</div>
-        <div class="upi-id" id="upiDisplay">loading...</div>
-        
-        <div class="info" id="statusInfo">
-            Tap a payment method below to pay
-        </div>
-
-        <div class="methods">
-            <div class="methods-title">Choose Payment App</div>
-            <a href="#" class="btn btn-blue" id="btnGpay">📱 Google Pay</a>
-            <a href="#" class="btn btn-purple" id="btnPhonepe">💜 PhonePe</a>
-            <a href="#" class="btn btn-cyan" id="btnPaytm">💙 Paytm</a>
-            <a href="#" class="btn btn-orange" id="btnUpi">🏦 Other UPI App</a>
-        </div>
-
-        <div class="warning" id="troubleBox" style="display:none;">
-            <strong>Payment not working?</strong><br>
-            Copy the UPI ID above and pay manually in any UPI app.
-        </div>
-
-        <div class="divider"><span>after payment</span></div>
-        
-        <a href="/" class="btn btn-green">✅ Payment Done → Continue</a>
-        <a href="/" class="btn btn-outline">← Cancel</a>
-    </div>
+    <div class="card" id="card"></div>
 
 <script>
+// Build page content (NO redirects - only sets href on anchor tags)
 (function() {
     var params = new URLSearchParams(window.location.search);
-    var pa = params.get("pa"); // UPI ID
-    var am = params.get("am"); // Amount
+    var pa = params.get("pa");
+    var am = params.get("am") || "100";
     
     if (!pa) {
-        document.getElementById('card').innerHTML = '<div class="icon">⚠️</div><h2 style="color:#f44336">Invalid Link</h2><a href="/" class="btn btn-outline">← Go Home</a>';
+        document.getElementById('card').innerHTML = '<div class="icon">⚠️</div><h2 style="color:#f44336">Invalid Link</h2><p style="color:#aaa;margin:15px 0;">Payment details not found</p><a href="/" class="btn btn-outline">← Go Home</a>';
         return;
     }
     
-    // Display values
-    document.getElementById('upiDisplay').textContent = pa;
-    if (am) document.getElementById('amtDisplay').textContent = '₹' + am;
+    // Build UPI URLs (minimal params - no pn to avoid issues)
+    var upi = 'upi://pay?pa=' + pa + '&am=' + am + '&cu=INR';
+    var gpay = 'tez://upi/pay?pa=' + pa + '&am=' + am + '&cu=INR';
+    var phonepe = 'phonepe://pay?pa=' + pa + '&am=' + am + '&cu=INR';
+    var paytm = 'paytmmp://pay?pa=' + pa + '&am=' + am + '&cu=INR';
     
-    // Build UPI URLs - MINIMAL params only
-    // Format 1: upi://pay?pa=X&am=Y&cu=INR (standard)
-    var upiUrl = 'upi://pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    
-    // Format 2: gpay://upi/pay (Google Pay specific)
-    var gpayUrl = 'gpay://upi/pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    
-    // Format 3: tez:// (older GPay)
-    var tezUrl = 'tez://upi/pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    
-    // Format 4: phonepe://
-    var phonepeUrl = 'phonepe://pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    
-    // Format 5: paytmmp://
-    var paytmUrl = 'paytmmp://pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    
-    // Format 6: intent:// for Android (most reliable)
-    var intentUrl = 'intent://pay?pa=' + pa + '&am=' + am + '&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end';
-    
-    // Track attempts
-    var attempts = 0;
-    
-    function showTrouble() {
-        document.getElementById('troubleBox').style.display = 'block';
-        document.getElementById('statusInfo').innerHTML = 'If app opened, complete payment there.<br>If not, try another method or pay manually.';
-    }
-    
-    // Set button handlers
-    document.getElementById('btnGpay').onclick = function(e) {
-        e.preventDefault();
-        attempts++;
-        // Try gpay:// first, then tez://, then upi://
-        if (attempts === 1) {
-            window.location.href = gpayUrl;
-        } else if (attempts === 2) {
-            window.location.href = tezUrl;
-        } else {
-            window.location.href = upiUrl;
-        }
-        setTimeout(showTrouble, 2000);
-        return false;
-    };
-    
-    document.getElementById('btnPhonepe').onclick = function(e) {
-        e.preventDefault();
-        window.location.href = phonepeUrl;
-        setTimeout(showTrouble, 2000);
-        return false;
-    };
-    
-    document.getElementById('btnPaytm').onclick = function(e) {
-        e.preventDefault();
-        window.location.href = paytmUrl;
-        setTimeout(showTrouble, 2000);
-        return false;
-    };
-    
-    document.getElementById('btnUpi').onclick = function(e) {
-        e.preventDefault();
-        window.location.href = upiUrl;
-        setTimeout(showTrouble, 2000);
-        return false;
-    };
-    
-    // Copy UPI ID on click
-    document.getElementById('upiDisplay').onclick = function() {
-        navigator.clipboard.writeText(pa).then(function() {
-            document.getElementById('upiDisplay').textContent = '✓ Copied!';
-            setTimeout(function() {
-                document.getElementById('upiDisplay').textContent = pa;
-            }, 1500);
-        });
-    };
-    document.getElementById('upiDisplay').style.cursor = 'pointer';
-    document.getElementById('upiDisplay').title = 'Click to copy';
+    // Build page HTML with simple anchor links (NO JavaScript onclick)
+    document.getElementById('card').innerHTML = 
+        '<div class="icon">💳</div>' +
+        '<h2>Pay to Continue</h2>' +
+        '<div class="amount">₹' + am + '</div>' +
+        '<div class="upi-box">' +
+            '<div class="upi-label">PAY TO UPI ID</div>' +
+            '<div class="upi-id">' + pa + '</div>' +
+        '</div>' +
+        '<div class="info">Tap a button below to open payment app.<br>Complete payment, then return here.</div>' +
+        '<a href="' + gpay + '" class="btn btn-blue">📱 Google Pay</a>' +
+        '<a href="' + phonepe + '" class="btn btn-purple">💜 PhonePe</a>' +
+        '<a href="' + paytm + '" class="btn btn-cyan">💙 Paytm</a>' +
+        '<a href="' + upi + '" class="btn btn-orange">🏦 Any UPI App</a>' +
+        '<div class="divider"><span>after payment</span></div>' +
+        '<a href="/" class="btn btn-green">✅ I Have Paid → Continue</a>' +
+        '<a href="/" class="btn btn-outline">← Cancel</a>' +
+        '<p class="note">If app doesn\'t open, copy UPI ID above and pay manually</p>';
 })();
 </script>
 </body>

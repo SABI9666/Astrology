@@ -453,14 +453,12 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Payment Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-card">
             <div class="modal-icon">🔮</div>
             <h2 class="modal-title">Complete Payment</h2>
             <div class="amount" id="amount">₹100</div>
 
-            <!-- UPI App Buttons -->
             <div class="upi-buttons">
                 <button class="upi-btn gpay" id="gpayBtn">
                     <span class="upi-btn-icon">📱</span>
@@ -507,7 +505,6 @@
             <p>ज्योतिष | Jyotish | ജ്യോതിഷം</p>
         </div>
 
-        <!-- Input Form -->
         <div class="card" id="inputCard">
             <form id="mainForm">
                 <div class="form-group">
@@ -578,7 +575,6 @@
             </form>
         </div>
 
-        <!-- Results -->
         <div class="results" id="results">
             <div class="card">
                 <div class="results-header">
@@ -650,6 +646,9 @@
         // Handle UPI button clicks with fallback
         document.querySelectorAll('.upi-btn').forEach(btn => {
             btn.onclick = function(e) {
+                // Skip if this is the GPay button as it has its own handler
+                if (this.id === 'gpayBtn') return;
+                
                 const href = this.href;
                 if (!href || href === '#') {
                     e.preventDefault();
@@ -668,7 +667,7 @@
             };
         });
 
-        // GPay button - try multiple URLs
+        // GPay button - Updated for Reliability
         document.getElementById('gpayBtn').onclick = function(e) {
             e.preventDefault();
             
@@ -679,42 +678,23 @@
 
             showToast('Opening Google Pay...');
             
-            // Try each GPay URL format
-            let urlIndex = 0;
+            // On mobile, direct window location is safer than iframes for intents
+            // This prevents "Limit Exceeded" errors caused by security flags on hidden iframes
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
-            function tryNextUrl() {
-                if (urlIndex >= gpayUrls.length) {
-                    // All URLs failed, show manual option
-                    showToast('GPay not opening? Copy UPI ID and pay manually');
-                    return;
-                }
+            if (isMobile) {
+                // Use the standard UPI intent first (gpayUrls[0])
+                window.location.href = gpayUrls[0];
                 
-                const url = gpayUrls[urlIndex];
-                urlIndex++;
-                
-                // Create hidden iframe to try the URL
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                
-                // Try to open URL
-                const startTime = Date.now();
-                
-                // Also try window.location for better compatibility
-                window.location.href = url;
-                
-                // Check if app opened after short delay
+                // Fallback check
                 setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    // If we're still here after 1.5s, app didn't open
-                    if (document.hasFocus() && Date.now() - startTime < 2000) {
-                        // Try next URL format
-                        tryNextUrl();
+                    if (document.hasFocus()) {
+                         showToast('If GPay did not open, try the "Other UPI Apps" button.');
                     }
-                }, 1500);
+                }, 2500);
+            } else {
+                showToast('Please use a mobile device to pay via App');
             }
-            
-            tryNextUrl();
         };
 
         function showToast(msg) {

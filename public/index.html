@@ -16,7 +16,6 @@
             --white: #f8f4ff;
             --green: #4CAF50;
             --red: #f44336;
-            --orange: #ff9800;
             --whatsapp: #25D366;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -180,7 +179,7 @@
             font-family: 'Cinzel', serif;
         }
 
-        /* Payment Modal */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -249,8 +248,6 @@
             font-size: 0.95rem;
             cursor: pointer;
         }
-
-        /* UPI Buttons */
         .upi-buttons {
             display: flex;
             flex-direction: column;
@@ -269,14 +266,14 @@
             font-weight: 600;
             font-size: 0.9rem;
             transition: transform 0.2s, opacity 0.2s;
+            border: none;
+            cursor: pointer;
         }
         .upi-btn:active { transform: scale(0.97); opacity: 0.9; }
-        .upi-btn-icon { font-size: 1.2rem; }
         .upi-btn.gpay { background: linear-gradient(135deg, #4285F4, #34A853); }
         .upi-btn.phonepe { background: linear-gradient(135deg, #5f259f, #8b5cf6); }
         .upi-btn.paytm { background: linear-gradient(135deg, #00BAF2, #0078D4); }
         .upi-btn.allupi { background: linear-gradient(135deg, #ff9800, #e65100); }
-        
         .divider {
             display: flex;
             align-items: center;
@@ -292,15 +289,6 @@
             background: rgba(212,175,55,0.3);
         }
         .divider span { padding: 0 12px; }
-
-        .manual-steps {
-            font-size: 0.8rem;
-            color: var(--gold-light);
-            opacity: 0.7;
-            margin: 10px 0;
-            line-height: 1.5;
-        }
-
         .verify-btn {
             width: 100%;
             padding: 16px;
@@ -347,12 +335,7 @@
             color: #a5d6a7;
             line-height: 1.6;
         }
-
-        /* Success Modal */
-        .success-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
-        }
+        .success-icon { font-size: 4rem; margin-bottom: 15px; }
         .steps-list {
             text-align: left;
             background: rgba(0,0,0,0.2);
@@ -379,11 +362,7 @@
             font-size: 0.85rem;
             flex-shrink: 0;
         }
-        .step-text {
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
+        .step-text { font-size: 0.9rem; line-height: 1.5; }
         .error {
             background: rgba(244,67,54,0.2);
             border: 1px solid rgba(244,67,54,0.5);
@@ -417,12 +396,10 @@
 </head>
 <body>
     <div class="stars" id="stars"></div>
-
     <div class="loading" id="loading">
         <div class="spinner"></div>
         <p id="loadingText">Consulting the Stars...</p>
     </div>
-
     <div class="toast" id="toast"></div>
 
     <!-- Payment Modal -->
@@ -434,21 +411,21 @@
 
             <div class="upi-buttons">
                 <button class="upi-btn gpay" id="gpayBtn">
-                    <span class="upi-btn-icon">📱</span>
+                    <span>📱</span>
                     <span>Pay with Google Pay</span>
                 </button>
-                <a href="#" class="upi-btn phonepe" id="phonepeBtn">
-                    <span class="upi-btn-icon">💜</span>
+                <button class="upi-btn phonepe" id="phonepeBtn">
+                    <span>💜</span>
                     <span>Pay with PhonePe</span>
-                </a>
-                <a href="#" class="upi-btn paytm" id="paytmBtn">
-                    <span class="upi-btn-icon">💙</span>
+                </button>
+                <button class="upi-btn paytm" id="paytmBtn">
+                    <span>💙</span>
                     <span>Pay with Paytm</span>
-                </a>
-                <a href="#" class="upi-btn allupi" id="allUpiBtn">
-                    <span class="upi-btn-icon">🏦</span>
+                </button>
+                <button class="upi-btn allupi" id="allUpiBtn">
+                    <span>🏦</span>
                     <span>Other UPI Apps</span>
-                </a>
+                </button>
             </div>
 
             <div class="divider"><span>or pay manually</span></div>
@@ -459,8 +436,8 @@
                 <button class="copy-btn" id="copyBtn">📋 Copy UPI ID</button>
             </div>
 
-            <p class="manual-steps">
-                Open any UPI app → Pay to UPI ID → Enter ₹<span id="amountText">100.00</span>
+            <p style="font-size: 0.8rem; color: var(--gold-light); opacity: 0.7; margin: 10px 0;">
+                Open your UPI app → Pay to above UPI ID → Enter ₹<span id="amountText">100.00</span>
             </p>
 
             <div class="warning">
@@ -469,7 +446,7 @@
 
             <button class="verify-btn" id="verifyBtn">
                 <span>📱</span>
-                <span>I Have Paid → Send WhatsApp</span>
+                <span>I Have Paid → Verify on WhatsApp</span>
             </button>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
         </div>
@@ -492,15 +469,11 @@
                 </div>
                 <div class="step">
                     <span class="step-num">2</span>
-                    <span class="step-text">Wait for admin to verify your payment</span>
+                    <span class="step-text">Admin will verify your payment (few minutes)</span>
                 </div>
                 <div class="step">
                     <span class="step-num">3</span>
-                    <span class="step-text">Admin will send you the <strong>reading link</strong> on WhatsApp</span>
-                </div>
-                <div class="step">
-                    <span class="step-num">4</span>
-                    <span class="step-text">Click the link to view your personalized reading!</span>
+                    <span class="step-text">You'll receive <strong>reading link + PDF</strong> on WhatsApp</span>
                 </div>
             </div>
 
@@ -592,21 +565,20 @@
     <script>
         let selectedTags = [];
         let userData = null;
-        let paymentToken = null;
+        let paymentUrls = {};
         let whatsappUrl = null;
-        let gpayUrls = [];
 
         const questionMap = {
-            marriage: "Marriage predictions - when will I marry, partner details",
-            job: "Job predictions - opportunities, timing, salary",
-            career: "Career growth and success predictions",
-            wealth: "Wealth and financial prosperity predictions",
-            health: "Health predictions and concerns",
-            love: "Love life and relationship predictions",
-            education: "Education and academic success",
-            children: "Children and progeny predictions",
-            foreign: "Foreign travel and settlement chances",
-            business: "Business success predictions"
+            marriage: "Marriage predictions",
+            job: "Job predictions",
+            career: "Career growth",
+            wealth: "Wealth prospects",
+            health: "Health predictions",
+            love: "Love life",
+            education: "Education success",
+            children: "Children predictions",
+            foreign: "Foreign travel",
+            business: "Business success"
         };
 
         // Create stars
@@ -637,38 +609,6 @@
             };
         });
 
-        // Handle UPI buttons
-        document.querySelectorAll('.upi-btn').forEach(btn => {
-            btn.onclick = function(e) {
-                if (this.id === 'gpayBtn') return;
-                const href = this.href;
-                if (!href || href === '#') {
-                    e.preventDefault();
-                    return;
-                }
-                setTimeout(() => showToast('Opening payment app...'), 100);
-            };
-        });
-
-        // GPay Handler
-        document.getElementById('gpayBtn').onclick = function(e) {
-            e.preventDefault();
-            if (gpayUrls.length === 0) {
-                showToast('Payment not ready');
-                return;
-            }
-            showToast('Opening Google Pay...');
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                window.location.href = gpayUrls[0];
-                setTimeout(() => {
-                    if (document.hasFocus()) showToast('If GPay did not open, try "Other UPI Apps"');
-                }, 2500);
-            } else {
-                showToast('Please use a mobile device');
-            }
-        };
-
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
@@ -682,6 +622,39 @@
             e.classList.add('active');
             setTimeout(() => e.classList.remove('active'), 5000);
         }
+
+        // Open UPI app
+        function openUpiApp(url, appName) {
+            if (!url) {
+                showToast('Payment not ready');
+                return;
+            }
+            
+            showToast(`Opening ${appName}...`);
+            
+            // For mobile, use location.href for better UPI handling
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Try to open the app
+                window.location.href = url;
+                
+                // Fallback message after delay
+                setTimeout(() => {
+                    if (document.hasFocus()) {
+                        showToast(`If ${appName} didn't open, use "Other UPI Apps" or copy UPI ID`);
+                    }
+                }, 3000);
+            } else {
+                showToast('Please use a mobile device for UPI payment');
+            }
+        }
+
+        // UPI button handlers
+        document.getElementById('gpayBtn').onclick = () => openUpiApp(paymentUrls.gpay, 'Google Pay');
+        document.getElementById('phonepeBtn').onclick = () => openUpiApp(paymentUrls.phonepe, 'PhonePe');
+        document.getElementById('paytmBtn').onclick = () => openUpiApp(paymentUrls.paytm, 'Paytm');
+        document.getElementById('allUpiBtn').onclick = () => openUpiApp(paymentUrls.upi, 'UPI App');
 
         // Form submit
         document.getElementById('mainForm').onsubmit = async function(e) {
@@ -697,9 +670,9 @@
                 return;
             }
 
-            let questions = selectedTags.map(t => questionMap[t] || '').join(' ');
+            let questions = selectedTags.map(t => questionMap[t] || '').join(', ');
             const customQ = document.getElementById('customQ').value.trim();
-            if (customQ) questions += ' ' + customQ;
+            if (customQ) questions += (questions ? '. ' : '') + customQ;
             if (!questions) questions = 'Complete life reading';
 
             userData = {
@@ -721,17 +694,13 @@
 
                 if (!data.success) throw new Error(data.message);
 
-                paymentToken = data.data.token;
+                // Store payment URLs
+                paymentUrls = data.data.urls;
+                
+                // Update UI
                 document.getElementById('amount').textContent = '₹' + data.data.amount;
                 document.getElementById('amountText').textContent = data.data.amount;
                 document.getElementById('upiId').textContent = data.data.upiId;
-                
-                const urls = data.data.urls;
-                gpayUrls = [urls.gpay1, urls.gpay2, urls.gpay3];
-                
-                document.getElementById('phonepeBtn').href = urls.phonepe;
-                document.getElementById('paytmBtn').href = urls.paytm;
-                document.getElementById('allUpiBtn').href = urls.upi;
 
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('paymentModal').classList.add('active');
@@ -755,7 +724,6 @@
         // Cancel
         document.getElementById('cancelBtn').onclick = function() {
             document.getElementById('paymentModal').classList.remove('active');
-            paymentToken = null;
         };
 
         // Verify - Send to WhatsApp
@@ -774,10 +742,7 @@
                 const res = await fetch('/api/verify-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...userData,
-                        paymentToken: paymentToken || 'direct'
-                    })
+                    body: JSON.stringify(userData)
                 });
 
                 const result = await res.json();
@@ -820,7 +785,6 @@
             selectedTags = [];
             document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
             userData = null;
-            paymentToken = null;
             whatsappUrl = null;
         };
     </script>

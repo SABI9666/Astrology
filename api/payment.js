@@ -1,29 +1,29 @@
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'Celestial Oracle';
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'GET') return res.status(405).json({ success: false });
 
-    const amount = "100"; // fixed amount
+    const upiId = "pradeeksha798-1@okhdfcbank";
+    const upiName = "COS 5";
+    const amount = "100"; // fixed price
 
-    // Keep payee name clean BUT allow spaces
+    // Allow space, clean special characters
     const cleanName = upiName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 25);
 
-    // Generate unique transaction ID
-    const txid = 'TXN' + Date.now();
+    // Unique transaction ID
+    const txid = "TXN" + Date.now();
 
-    const upiParams =
+    // Final UPI Parameters
+    const params =
         `pa=${upiId}` +
         `&pn=${encodeURIComponent(cleanName)}` +
         `&am=${amount}` +
         `&cu=INR` +
         `&tr=${txid}` +
-        `&tn=Astrology Reading`;
-
-    const upiUrl = 'upi://pay?' + upiParams;
-    const gpayUrl = 'tez://upi/pay?' + upiParams;
-    const phonepeUrl = 'phonepe://pay?' + upiParams;
-    const paytmUrl = 'paytmmp://pay?' + upiParams;
+        `&tn=Astrology%20Reading`;
 
     return res.status(200).json({
         success: true,
@@ -32,10 +32,10 @@ export default function handler(req, res) {
             upiId,
             upiName: cleanName,
             urls: {
-                upi: upiUrl,
-                gpay: gpayUrl,
-                phonepe: phonepeUrl,
-                paytm: paytmUrl
+                upi: `upi://pay?${params}`,
+                gpay: `tez://upi/pay?${params}`,
+                phonepe: `phonepe://pay?${params}`,
+                paytm: `paytmmp://pay?${params}`
             }
         }
     });

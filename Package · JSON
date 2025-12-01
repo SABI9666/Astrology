@@ -1,7 +1,7 @@
 {
   "name": "celestial-oracle",
-  "version": "1.0.0",
-  "description": "AI-powered astrology reading application",
+  "version": "2.0.0",
+  "description": "AI-powered astrology reading application with WhatsApp payment verification",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
@@ -12,7 +12,8 @@
     "astrology",
     "zodiac",
     "openai",
-    "vercel"
+    "vercel",
+    "whatsapp"
   ],
   "license": "MIT",
   "engines": {

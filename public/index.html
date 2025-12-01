@@ -6,11 +6,11 @@
     <meta name="theme-color" content="#0d0618">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Discover your cosmic destiny with personalized AI-powered astrology readings">
-    <title>Celestial Oracle | Astrology Reading</title>
+    <meta name="description" content="Discover your cosmic destiny with personalized AI-powered astrology readings in your language">
+    <title>Celestial Oracle | ज्योतिष Reading</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #D4AF37;
@@ -22,8 +22,6 @@
             --mystic-violet: #7b5ea7;
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --safe-left: env(safe-area-inset-left, 0px);
-            --safe-right: env(safe-area-inset-right, 0px);
         }
 
         * {
@@ -33,44 +31,32 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html {
-            font-size: 16px;
-            scroll-behavior: smooth;
-        }
+        html { font-size: 16px; scroll-behavior: smooth; }
 
         body {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Cormorant Garamond', 'Noto Sans', serif;
             background: var(--midnight);
             min-height: 100vh;
-            min-height: -webkit-fill-available;
             color: var(--star-white);
             overflow-x: hidden;
-            padding-top: var(--safe-top);
-            padding-bottom: var(--safe-bottom);
-            padding-left: var(--safe-left);
-            padding-right: var(--safe-right);
+            padding: var(--safe-top) 0 var(--safe-bottom) 0;
         }
 
-        /* Animated Star Background - Reduced for mobile performance */
         .stars-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             z-index: 0;
         }
 
         .star {
             position: absolute;
-            width: 2px;
-            height: 2px;
+            width: 2px; height: 2px;
             background: white;
             border-radius: 50%;
             animation: twinkle var(--duration, 3s) ease-in-out infinite;
             animation-delay: var(--delay, 0s);
-            will-change: opacity, transform;
         }
 
         @keyframes twinkle {
@@ -78,35 +64,10 @@
             50% { opacity: 1; transform: scale(1.3); }
         }
 
-        /* Shooting Stars - Hidden on mobile for performance */
-        .shooting-star {
-            position: absolute;
-            width: 80px;
-            height: 2px;
-            background: linear-gradient(90deg, var(--gold), transparent);
-            opacity: 0;
-            animation: shoot 4s ease-in-out infinite;
-        }
-
-        @media (max-width: 768px) {
-            .shooting-star {
-                display: none;
-            }
-        }
-
-        @keyframes shoot {
-            0% { opacity: 0; transform: translateX(0) translateY(0); }
-            10% { opacity: 1; }
-            100% { opacity: 0; transform: translateX(-400px) translateY(250px); }
-        }
-
-        /* Cosmic Gradient Overlay */
         .cosmic-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: 
                 radial-gradient(ellipse at 20% 20%, rgba(123, 94, 167, 0.15) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(42, 31, 94, 0.3) 0%, transparent 50%),
@@ -115,7 +76,6 @@
             z-index: 1;
         }
 
-        /* Main Container */
         .oracle-container {
             position: relative;
             z-index: 10;
@@ -124,16 +84,12 @@
             flex-direction: column;
             align-items: center;
             padding: 30px 16px;
-            padding-bottom: calc(30px + var(--safe-bottom));
         }
 
         @media (min-width: 768px) {
-            .oracle-container {
-                padding: 40px 20px;
-            }
+            .oracle-container { padding: 40px 20px; }
         }
 
-        /* Header */
         .oracle-header {
             text-align: center;
             margin-bottom: 30px;
@@ -141,36 +97,19 @@
             width: 100%;
         }
 
-        @media (min-width: 768px) {
-            .oracle-header {
-                margin-bottom: 50px;
-            }
-        }
-
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .zodiac-wheel {
-            width: 70px;
-            height: 70px;
+            width: 70px; height: 70px;
             margin: 0 auto 15px;
             animation: rotate 60s linear infinite;
         }
 
         @media (min-width: 768px) {
-            .zodiac-wheel {
-                width: 100px;
-                height: 100px;
-                margin-bottom: 20px;
-            }
+            .zodiac-wheel { width: 100px; height: 100px; }
         }
 
         @keyframes rotate {
@@ -181,26 +120,14 @@
         .oracle-title {
             font-family: 'Cinzel', serif;
             font-size: 1.75rem;
-            font-weight: 400;
             letter-spacing: 0.15em;
             color: var(--gold);
             text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
             margin-bottom: 8px;
         }
 
-        @media (min-width: 480px) {
-            .oracle-title {
-                font-size: 2.25rem;
-                letter-spacing: 0.2em;
-            }
-        }
-
         @media (min-width: 768px) {
-            .oracle-title {
-                font-size: 3rem;
-                letter-spacing: 0.3em;
-                margin-bottom: 10px;
-            }
+            .oracle-title { font-size: 3rem; letter-spacing: 0.3em; }
         }
 
         .oracle-subtitle {
@@ -208,48 +135,27 @@
             font-style: italic;
             color: var(--gold-light);
             opacity: 0.8;
-            letter-spacing: 0.1em;
         }
 
-        @media (min-width: 768px) {
-            .oracle-subtitle {
-                font-size: 1.2rem;
-                letter-spacing: 0.2em;
-            }
-        }
-
-        /* Form Card */
         .oracle-card {
             background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 6, 24, 0.98));
             border: 1px solid rgba(212, 175, 55, 0.3);
             border-radius: 16px;
             padding: 24px 20px;
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 
-                0 15px 50px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(212, 175, 55, 0.1);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
             animation: fadeInUp 1s ease-out 0.3s both;
         }
 
         @media (min-width: 768px) {
-            .oracle-card {
-                padding: 50px;
-                border-radius: 20px;
-            }
+            .oracle-card { padding: 40px; }
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card-decoration {
@@ -257,114 +163,147 @@
             margin-bottom: 20px;
         }
 
-        @media (min-width: 768px) {
-            .card-decoration {
-                margin-bottom: 30px;
-            }
-        }
-
         .card-decoration svg {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             fill: var(--gold);
             opacity: 0.6;
         }
 
-        @media (min-width: 768px) {
-            .card-decoration svg {
-                width: 60px;
-                height: 60px;
-            }
-        }
+        .form-group { margin-bottom: 18px; }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .form-group {
-                margin-bottom: 25px;
-            }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         .form-label {
             display: block;
             font-family: 'Cinzel', serif;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             letter-spacing: 0.15em;
             color: var(--gold);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
-        @media (min-width: 768px) {
-            .form-label {
-                font-size: 0.9rem;
-                letter-spacing: 0.2em;
-                margin-bottom: 12px;
-            }
-        }
-
         .form-hint {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gold-light);
             opacity: 0.6;
-            margin-top: 8px;
+            margin-top: 6px;
             font-style: italic;
         }
 
-        @media (min-width: 768px) {
-            .form-hint {
-                font-size: 0.8rem;
-            }
-        }
-
-        .form-input {
+        .form-input, .form-select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(212, 175, 55, 0.25);
             border-radius: 10px;
             color: var(--star-white);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 16px; /* Prevents iOS zoom */
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 16px;
             transition: all 0.3s ease;
             -webkit-appearance: none;
-            appearance: none;
         }
 
-        @media (min-width: 768px) {
-            .form-input {
-                padding: 16px 20px;
-                font-size: 1.1rem;
-            }
+        .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23D4AF37' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+            cursor: pointer;
         }
 
-        .form-input:focus {
+        .form-select option {
+            background: var(--deep-purple);
+            color: var(--star-white);
+        }
+
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--gold);
             background: rgba(212, 175, 55, 0.08);
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
         }
 
-        .form-input::placeholder {
-            color: rgba(248, 244, 255, 0.35);
-        }
+        .form-input::placeholder { color: rgba(248, 244, 255, 0.35); }
 
-        /* Custom date/time input styling */
-        input[type="date"],
-        input[type="time"] {
-            min-height: 50px;
-        }
+        input[type="date"], input[type="time"] { min-height: 48px; }
 
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(0.8) sepia(1) saturate(5) hue-rotate(10deg);
             cursor: pointer;
-            padding: 8px;
         }
 
-        /* Submit Button */
+        /* Question Tags */
+        .question-section {
+            margin-top: 10px;
+        }
+
+        .question-label {
+            display: block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .question-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .question-tag {
+            padding: 8px 14px;
+            background: rgba(123, 94, 167, 0.15);
+            border: 1px solid rgba(123, 94, 167, 0.3);
+            border-radius: 20px;
+            color: var(--mystic-violet);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        .question-tag:hover, .question-tag.active {
+            background: rgba(123, 94, 167, 0.3);
+            border-color: var(--mystic-violet);
+            color: var(--star-white);
+        }
+
+        .question-tag.active {
+            background: var(--mystic-violet);
+        }
+
+        .custom-question {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 10px;
+            color: var(--star-white);
+            font-family: 'Noto Sans', sans-serif;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 70px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-question:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .custom-question::placeholder { color: rgba(248, 244, 255, 0.35); }
+
         .oracle-button {
             width: 100%;
             padding: 16px 30px;
@@ -377,99 +316,42 @@
             color: var(--midnight);
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             text-transform: uppercase;
-            margin-top: 10px;
+            margin-top: 15px;
             min-height: 54px;
-            font-weight: 500;
-            -webkit-appearance: none;
-            appearance: none;
+            font-weight: 600;
         }
 
-        @media (min-width: 768px) {
-            .oracle-button {
-                padding: 18px 40px;
-                font-size: 1rem;
-                letter-spacing: 0.3em;
-            }
-        }
-
-        .oracle-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .oracle-button:hover::before,
-        .oracle-button:active::before {
-            left: 100%;
-        }
-
-        .oracle-button:active {
-            transform: scale(0.98);
-        }
-
-        @media (min-width: 768px) {
-            .oracle-button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
-            }
-        }
+        .oracle-button:active { transform: scale(0.98); }
 
         .oracle-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .oracle-button:disabled:hover::before,
-        .oracle-button:disabled:active::before {
-            left: -100%;
-        }
-
-        /* Loading State */
+        /* Loading */
         .loading-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(13, 6, 24, 0.97);
             z-index: 1000;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            padding: 20px;
         }
 
-        .loading-overlay.active {
-            display: flex;
-        }
+        .loading-overlay.active { display: flex; }
 
         .celestial-loader {
-            width: 100px;
-            height: 100px;
+            width: 100px; height: 100px;
             position: relative;
-        }
-
-        @media (min-width: 768px) {
-            .celestial-loader {
-                width: 120px;
-                height: 120px;
-            }
         }
 
         .loader-ring {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             border: 2px solid transparent;
             border-top-color: var(--gold);
             border-radius: 50%;
@@ -477,30 +359,24 @@
         }
 
         .loader-ring:nth-child(2) {
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
+            width: 80%; height: 80%;
+            top: 10%; left: 10%;
             border-top-color: var(--mystic-violet);
             animation-duration: 2s;
             animation-direction: reverse;
         }
 
         .loader-ring:nth-child(3) {
-            width: 60%;
-            height: 60%;
-            top: 20%;
-            left: 20%;
+            width: 60%; height: 60%;
+            top: 20%; left: 20%;
             border-top-color: var(--gold-light);
             animation-duration: 1s;
         }
 
         .loader-center {
             position: absolute;
-            width: 16px;
-            height: 16px;
-            top: 50%;
-            left: 50%;
+            width: 16px; height: 16px;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: var(--gold);
             border-radius: 50%;
@@ -512,9 +388,7 @@
             50% { box-shadow: 0 0 25px var(--gold), 0 0 50px var(--gold); }
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .loading-text {
             margin-top: 25px;
@@ -526,20 +400,12 @@
             text-align: center;
         }
 
-        @media (min-width: 768px) {
-            .loading-text {
-                font-size: 1.2rem;
-                letter-spacing: 0.2em;
-            }
-        }
-
         .loading-subtext {
             margin-top: 8px;
             font-size: 0.9rem;
             color: var(--gold-light);
             opacity: 0.7;
             font-style: italic;
-            text-align: center;
         }
 
         @keyframes pulse {
@@ -547,7 +413,7 @@
             50% { opacity: 1; }
         }
 
-        /* Results Section */
+        /* Results */
         .results-container {
             display: none;
             max-width: 800px;
@@ -556,15 +422,7 @@
             animation: fadeInUp 0.8s ease-out;
         }
 
-        @media (min-width: 768px) {
-            .results-container {
-                margin-top: 40px;
-            }
-        }
-
-        .results-container.active {
-            display: block;
-        }
+        .results-container.active { display: block; }
 
         .results-card {
             background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 6, 24, 0.98));
@@ -572,15 +430,11 @@
             border-radius: 16px;
             padding: 30px 20px;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         @media (min-width: 768px) {
-            .results-card {
-                padding: 50px;
-                border-radius: 20px;
-            }
+            .results-card { padding: 50px; }
         }
 
         .results-header {
@@ -590,46 +444,26 @@
             border-bottom: 1px solid rgba(212, 175, 55, 0.2);
         }
 
-        @media (min-width: 768px) {
-            .results-header {
-                margin-bottom: 40px;
-                padding-bottom: 30px;
-            }
-        }
-
         .zodiac-symbol-result {
-            width: 90px;
-            height: 90px;
+            width: 90px; height: 90px;
             margin: 0 auto 15px;
-            position: relative;
         }
 
         @media (min-width: 768px) {
-            .zodiac-symbol-result {
-                width: 120px;
-                height: 120px;
-                margin-bottom: 20px;
-            }
+            .zodiac-symbol-result { width: 120px; height: 120px; }
         }
 
-        .zodiac-symbol-result svg {
-            width: 100%;
-            height: 100%;
-        }
+        .zodiac-symbol-result svg { width: 100%; height: 100%; }
 
         .sun-sign {
             font-family: 'Cinzel', serif;
             font-size: 1.8rem;
             color: var(--gold);
             margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
 
         @media (min-width: 768px) {
-            .sun-sign {
-                font-size: 2.5rem;
-                margin-bottom: 5px;
-            }
+            .sun-sign { font-size: 2.5rem; }
         }
 
         .badges-container {
@@ -640,23 +474,12 @@
             margin-bottom: 15px;
         }
 
-        .element-badge,
-        .life-path-badge {
-            display: inline-block;
+        .element-badge, .life-path-badge, .language-badge {
             padding: 6px 14px;
             border-radius: 20px;
             font-family: 'Cinzel', serif;
             font-size: 0.75rem;
             letter-spacing: 0.1em;
-        }
-
-        @media (min-width: 768px) {
-            .element-badge,
-            .life-path-badge {
-                padding: 5px 15px;
-                font-size: 0.85rem;
-                letter-spacing: 0.15em;
-            }
         }
 
         .element-badge {
@@ -671,6 +494,12 @@
             color: var(--mystic-violet);
         }
 
+        .language-badge {
+            background: rgba(42, 31, 94, 0.3);
+            border: 1px solid rgba(42, 31, 94, 0.5);
+            color: var(--star-white);
+        }
+
         .birth-info {
             font-style: italic;
             color: var(--gold-light);
@@ -680,35 +509,41 @@
             font-size: 0.95rem;
         }
 
-        @media (min-width: 768px) {
-            .birth-info {
-                font-size: 1rem;
-                line-height: 1.6;
-            }
+        .user-question {
+            background: rgba(123, 94, 167, 0.15);
+            border: 1px solid rgba(123, 94, 167, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .user-question-label {
+            font-size: 0.75rem;
+            color: var(--mystic-violet);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .user-question-text {
+            font-size: 1.1rem;
+            color: var(--star-white);
+            font-style: italic;
         }
 
         .reading-content {
             line-height: 1.9;
             font-size: 1.05rem;
             color: var(--star-white);
+            font-family: 'Noto Sans', sans-serif;
         }
 
         @media (min-width: 768px) {
-            .reading-content {
-                line-height: 2;
-                font-size: 1.15rem;
-            }
+            .reading-content { line-height: 2; font-size: 1.1rem; }
         }
 
-        .reading-content p {
-            margin-bottom: 18px;
-        }
-
-        @media (min-width: 768px) {
-            .reading-content p {
-                margin-bottom: 20px;
-            }
-        }
+        .reading-content p { margin-bottom: 18px; }
 
         .reading-section-title {
             font-family: 'Cinzel', serif;
@@ -720,20 +555,8 @@
             gap: 8px;
         }
 
-        @media (min-width: 768px) {
-            .reading-section-title {
-                font-size: 1.3rem;
-                margin: 30px 0 15px;
-                gap: 10px;
-            }
-        }
+        .reading-section-title::before { content: '✧'; font-size: 0.9rem; }
 
-        .reading-section-title::before {
-            content: '✧';
-            font-size: 0.9rem;
-        }
-
-        /* Action Buttons Container */
         .action-buttons {
             display: flex;
             flex-direction: column;
@@ -742,15 +565,10 @@
         }
 
         @media (min-width: 480px) {
-            .action-buttons {
-                flex-direction: row;
-                justify-content: center;
-                gap: 15px;
-            }
+            .action-buttons { flex-direction: row; justify-content: center; gap: 15px; }
         }
 
-        /* New Reading Button */
-        .new-reading-btn {
+        .new-reading-btn, .ask-another-btn {
             display: block;
             width: 100%;
             padding: 14px 30px;
@@ -764,37 +582,25 @@
             cursor: pointer;
             transition: all 0.3s ease;
             min-height: 50px;
-            -webkit-appearance: none;
-            appearance: none;
         }
 
         @media (min-width: 480px) {
-            .new-reading-btn {
-                width: auto;
-                flex: 1;
-                max-width: 200px;
-            }
+            .new-reading-btn, .ask-another-btn { width: auto; flex: 1; max-width: 220px; }
         }
 
-        @media (min-width: 768px) {
-            .new-reading-btn {
-                padding: 15px 40px;
-                font-size: 0.9rem;
-                letter-spacing: 0.2em;
-            }
-        }
-
-        .new-reading-btn:hover,
-        .new-reading-btn:active {
+        .new-reading-btn:hover, .ask-another-btn:hover {
             background: rgba(212, 175, 55, 0.1);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
         }
 
-        .new-reading-btn:active {
-            transform: scale(0.98);
+        .ask-another-btn {
+            border-color: var(--mystic-violet);
+            color: var(--mystic-violet);
         }
 
-        /* Share Button */
+        .ask-another-btn:hover {
+            background: rgba(123, 94, 167, 0.1);
+        }
+
         .share-btn {
             display: flex;
             align-items: center;
@@ -807,38 +613,18 @@
             border-radius: 10px;
             font-family: 'Cinzel', serif;
             font-size: 0.85rem;
-            letter-spacing: 0.1em;
             color: var(--mystic-violet);
             cursor: pointer;
             transition: all 0.3s ease;
             min-height: 50px;
-            -webkit-appearance: none;
-            appearance: none;
         }
 
         @media (min-width: 480px) {
-            .share-btn {
-                width: auto;
-                flex: 1;
-                max-width: 200px;
-            }
+            .share-btn { width: auto; flex: 1; max-width: 180px; }
         }
 
-        .share-btn:hover,
-        .share-btn:active {
-            background: rgba(123, 94, 167, 0.3);
-        }
+        .share-btn svg { width: 18px; height: 18px; }
 
-        .share-btn:active {
-            transform: scale(0.98);
-        }
-
-        .share-btn svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Error Message */
         .error-message {
             background: rgba(180, 50, 50, 0.2);
             border: 1px solid rgba(180, 50, 50, 0.5);
@@ -848,91 +634,10 @@
             color: #ff9999;
             display: none;
             line-height: 1.6;
-            font-size: 0.95rem;
         }
 
-        .error-message.active {
-            display: block;
-        }
+        .error-message.active { display: block; }
 
-        /* Corner Decorations - Hidden on mobile */
-        .corner-decoration {
-            position: fixed;
-            width: 100px;
-            height: 100px;
-            opacity: 0.08;
-            pointer-events: none;
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .corner-decoration {
-                display: block;
-                width: 150px;
-                height: 150px;
-                opacity: 0.1;
-            }
-        }
-
-        .corner-decoration.top-left {
-            top: 20px;
-            left: 20px;
-        }
-
-        .corner-decoration.bottom-right {
-            bottom: 20px;
-            right: 20px;
-            transform: rotate(180deg);
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--midnight);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(212, 175, 55, 0.3);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(212, 175, 55, 0.5);
-        }
-
-        /* Landscape orientation adjustments */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .oracle-header {
-                margin-bottom: 20px;
-            }
-
-            .zodiac-wheel {
-                width: 50px;
-                height: 50px;
-                margin-bottom: 10px;
-            }
-
-            .oracle-title {
-                font-size: 1.5rem;
-            }
-
-            .oracle-subtitle {
-                font-size: 0.9rem;
-            }
-
-            .form-group {
-                margin-bottom: 15px;
-            }
-
-            .oracle-card {
-                padding: 20px 16px;
-            }
-        }
-
-        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -945,7 +650,6 @@
             color: var(--gold);
             font-family: 'Cinzel', serif;
             font-size: 0.85rem;
-            letter-spacing: 0.1em;
             z-index: 2000;
             opacity: 0;
             transition: all 0.3s ease;
@@ -956,27 +660,56 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        /* Question Modal */
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(13, 6, 24, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .question-modal.active { display: flex; }
+
+        .question-modal-content {
+            background: linear-gradient(145deg, rgba(26, 10, 46, 0.98), rgba(13, 6, 24, 0.99));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            padding: 30px 25px;
+            max-width: 500px;
+            width: 100%;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <!-- Stars Background -->
     <div class="stars-container" id="stars"></div>
     <div class="cosmic-overlay"></div>
+    <div class="toast" id="toast">Copied!</div>
 
-    <!-- Corner Decorations -->
-    <svg class="corner-decoration top-left" viewBox="0 0 100 100">
-        <path d="M0 0 L100 0 L100 10 L10 10 L10 100 L0 100 Z" fill="#D4AF37"/>
-        <circle cx="50" cy="50" r="3" fill="#D4AF37"/>
-    </svg>
-    <svg class="corner-decoration bottom-right" viewBox="0 0 100 100">
-        <path d="M0 0 L100 0 L100 10 L10 10 L10 100 L0 100 Z" fill="#D4AF37"/>
-        <circle cx="50" cy="50" r="3" fill="#D4AF37"/>
-    </svg>
-
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">Copied to clipboard!</div>
-
-    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="celestial-loader">
             <div class="loader-ring"></div>
@@ -984,19 +717,27 @@
             <div class="loader-ring"></div>
             <div class="loader-center"></div>
         </div>
-        <p class="loading-text">Consulting the Stars...</p>
-        <p class="loading-subtext">Aligning celestial energies</p>
+        <p class="loading-text" id="loadingText">Consulting the Stars...</p>
+        <p class="loading-subtext" id="loadingSubtext">Aligning celestial energies</p>
     </div>
 
-    <!-- Main Container -->
+    <!-- Question Modal for Follow-up -->
+    <div class="question-modal" id="questionModal">
+        <div class="question-modal-content">
+            <h3 class="modal-title">🔮 Ask Another Question</h3>
+            <div class="question-tags" id="modalQuestionTags"></div>
+            <textarea class="custom-question" id="modalCustomQuestion" placeholder="Or type your specific question..."></textarea>
+            <button class="oracle-button" id="modalSubmitBtn" style="margin-top: 15px;">Get Answer</button>
+            <button class="new-reading-btn" id="modalCloseBtn" style="margin-top: 10px;">Cancel</button>
+        </div>
+    </div>
+
     <div class="oracle-container">
-        <!-- Header -->
         <header class="oracle-header">
             <svg class="zodiac-wheel" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.5"/>
                 <circle cx="50" cy="50" r="35" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
                 <circle cx="50" cy="50" r="25" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
-                <!-- Zodiac symbols -->
                 <text x="50" y="12" text-anchor="middle" fill="#D4AF37" font-size="8">♈</text>
                 <text x="80" y="25" text-anchor="middle" fill="#D4AF37" font-size="8">♉</text>
                 <text x="93" y="53" text-anchor="middle" fill="#D4AF37" font-size="8">♊</text>
@@ -1005,16 +746,14 @@
                 <text x="20" y="80" text-anchor="middle" fill="#D4AF37" font-size="8">♍</text>
                 <text x="7" y="53" text-anchor="middle" fill="#D4AF37" font-size="8">♎</text>
                 <text x="20" y="25" text-anchor="middle" fill="#D4AF37" font-size="8">♏</text>
-                <!-- Center sun -->
                 <circle cx="50" cy="50" r="8" fill="#D4AF37" opacity="0.8"/>
                 <circle cx="50" cy="50" r="5" fill="#1a0a2e"/>
                 <circle cx="50" cy="50" r="2" fill="#D4AF37"/>
             </svg>
             <h1 class="oracle-title">CELESTIAL ORACLE</h1>
-            <p class="oracle-subtitle">Discover Your Cosmic Blueprint</p>
+            <p class="oracle-subtitle">✨ ज्योतिष | Jyotish | ജ്യോതിഷം ✨</p>
         </header>
 
-        <!-- Input Form -->
         <div class="oracle-card" id="inputCard">
             <div class="card-decoration">
                 <svg viewBox="0 0 60 60">
@@ -1028,31 +767,75 @@
             </div>
 
             <form id="birthForm">
+                <!-- Language Selection -->
                 <div class="form-group">
-                    <label class="form-label" for="birthName">Your Name</label>
-                    <input type="text" id="birthName" class="form-input" placeholder="Enter your name" required autocomplete="name" inputmode="text">
+                    <label class="form-label" for="language">🌐 Select Language / भाषा चुनें</label>
+                    <select id="language" class="form-select">
+                        <option value="english">English</option>
+                        <option value="hindi">हिन्दी (Hindi)</option>
+                        <option value="tamil">தமிழ் (Tamil)</option>
+                        <option value="telugu">తెలుగు (Telugu)</option>
+                        <option value="malayalam">മലയാളം (Malayalam)</option>
+                        <option value="kannada">ಕನ್ನಡ (Kannada)</option>
+                        <option value="bengali">বাংলা (Bengali)</option>
+                        <option value="marathi">मराठी (Marathi)</option>
+                        <option value="gujarati">ગુજરાતી (Gujarati)</option>
+                        <option value="punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="odia">ଓଡ଼ିଆ (Odia)</option>
+                        <option value="assamese">অসমীয়া (Assamese)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="birthDate">Date of Birth</label>
-                    <input type="date" id="birthDate" class="form-input" required>
+                    <label class="form-label" for="birthName">Your Name / आपका नाम</label>
+                    <input type="text" id="birthName" class="form-input" placeholder="Enter your name" required autocomplete="name">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="birthTime">Time of Birth</label>
-                    <input type="time" id="birthTime" class="form-input" required>
-                    <p class="form-hint">If unknown, enter your best estimate</p>
+                    <label class="form-label">Gender / लिंग</label>
+                    <select id="gender" class="form-select">
+                        <option value="male">Male / पुरुष</option>
+                        <option value="female">Female / महिला</option>
+                        <option value="other">Other / अन्य</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="birthDate">Date of Birth</label>
+                        <input type="date" id="birthDate" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="birthTime">Time of Birth</label>
+                        <input type="time" id="birthTime" class="form-input" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="birthPlace">Place of Birth</label>
-                    <input type="text" id="birthPlace" class="form-input" placeholder="City, Country" required autocomplete="off" inputmode="text">
+                    <label class="form-label" for="birthPlace">Place of Birth / जन्म स्थान</label>
+                    <input type="text" id="birthPlace" class="form-input" placeholder="City, State, Country" required>
                 </div>
 
-                <button type="submit" class="oracle-button" id="submitBtn">
-                    Reveal My Destiny
-                </button>
+                <!-- Question Section -->
+                <div class="question-section">
+                    <label class="question-label">🔮 What do you want to know? / क्या जानना चाहते हैं?</label>
+                    <div class="question-tags" id="questionTags">
+                        <span class="question-tag" data-question="marriage">💍 Marriage / विवाह</span>
+                        <span class="question-tag" data-question="job">💼 Job / नौकरी</span>
+                        <span class="question-tag" data-question="career">📈 Career / करियर</span>
+                        <span class="question-tag" data-question="wealth">💰 Wealth / धन</span>
+                        <span class="question-tag" data-question="health">🏥 Health / स्वास्थ्य</span>
+                        <span class="question-tag" data-question="love">❤️ Love / प्रेम</span>
+                        <span class="question-tag" data-question="education">📚 Education / शिक्षा</span>
+                        <span class="question-tag" data-question="children">👶 Children / संतान</span>
+                        <span class="question-tag" data-question="travel">✈️ Foreign Travel / विदेश</span>
+                        <span class="question-tag" data-question="business">🏪 Business / व्यापार</span>
+                        <span class="question-tag" data-question="general">🌟 Full Reading / पूर्ण कुंडली</span>
+                    </div>
+                    <textarea class="custom-question" id="customQuestion" placeholder="Or ask a specific question like: When will I get married? / मेरी शादी कब होगी?"></textarea>
+                </div>
 
+                <button type="submit" class="oracle-button" id="submitBtn">🔮 Get My Reading / भविष्य जानें</button>
                 <div class="error-message" id="errorMessage"></div>
             </form>
         </div>
@@ -1066,14 +849,21 @@
                     <div class="badges-container">
                         <span class="element-badge" id="elementBadge">Fire Element</span>
                         <span class="life-path-badge" id="lifePathBadge">Life Path 7</span>
+                        <span class="language-badge" id="languageBadge">English</span>
                     </div>
-                    <p class="birth-info" id="birthInfo">Born March 21, 1990 at 10:30 AM</p>
+                    <p class="birth-info" id="birthInfo"></p>
                 </div>
-                <div class="reading-content" id="readingContent">
-                    <!-- AI-generated content will appear here -->
+                
+                <div class="user-question" id="userQuestionSection" style="display: none;">
+                    <div class="user-question-label">Your Question / आपका प्रश्न</div>
+                    <div class="user-question-text" id="userQuestionText"></div>
                 </div>
+
+                <div class="reading-content" id="readingContent"></div>
+                
                 <div class="action-buttons">
-                    <button class="new-reading-btn" id="newReadingBtn">New Reading</button>
+                    <button class="ask-another-btn" id="askAnotherBtn">🔮 Ask Another Question</button>
+                    <button class="new-reading-btn" id="newReadingBtn">✨ New Reading</button>
                     <button class="share-btn" id="shareBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
@@ -1086,17 +876,45 @@
     </div>
 
     <script>
-        // API base URL - change this to your backend URL
-        const API_BASE_URL = window.location.origin;
-
-        // Detect if mobile for performance optimizations
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        let selectedQuestions = [];
+        let currentUserData = null;
 
-        // Generate stars - fewer on mobile for performance
+        // Language names mapping
+        const languageNames = {
+            english: 'English',
+            hindi: 'हिन्दी',
+            tamil: 'தமிழ்',
+            telugu: 'తెలుగు',
+            malayalam: 'മലയാളം',
+            kannada: 'ಕನ್ನಡ',
+            bengali: 'বাংলা',
+            marathi: 'मराठी',
+            gujarati: 'ગુજરાતી',
+            punjabi: 'ਪੰਜਾਬੀ',
+            odia: 'ଓଡ଼ିଆ',
+            assamese: 'অসমীয়া'
+        };
+
+        // Question mappings
+        const questionMappings = {
+            marriage: "When will I get married? What kind of partner will I have? Marriage predictions.",
+            job: "When will I get a job? Job change predictions. Career opportunities.",
+            career: "What is my ideal career path? Professional growth predictions.",
+            wealth: "When will I become wealthy? Financial predictions. Money and prosperity.",
+            health: "What are my health predictions? Any health concerns to watch?",
+            love: "Love life predictions. When will I find true love? Relationship compatibility.",
+            education: "Education predictions. Academic success. Higher studies prospects.",
+            children: "When will I have children? Children predictions. Progeny prospects.",
+            travel: "Foreign travel predictions. Abroad settlement chances. Immigration prospects.",
+            business: "Business success predictions. Should I start a business? Partnership prospects.",
+            general: "Complete horoscope reading including all aspects of life."
+        };
+
+        // Create stars
         function createStars() {
             const container = document.getElementById('stars');
-            const starCount = isMobile ? 80 : 200;
-            
+            const starCount = isMobile ? 80 : 150;
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -1109,204 +927,247 @@
                 star.style.height = size;
                 container.appendChild(star);
             }
-
-            // Add shooting stars only on desktop
-            if (!isMobile) {
-                for (let i = 0; i < 3; i++) {
-                    const shootingStar = document.createElement('div');
-                    shootingStar.className = 'shooting-star';
-                    shootingStar.style.top = Math.random() * 50 + '%';
-                    shootingStar.style.right = '-100px';
-                    shootingStar.style.animationDelay = (i * 5 + Math.random() * 3) + 's';
-                    shootingStar.style.animationDuration = (2 + Math.random() * 2) + 's';
-                    container.appendChild(shootingStar);
-                }
-            }
         }
         createStars();
 
-        // Set max date for birth date input (today)
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('birthDate').setAttribute('max', today);
+        document.getElementById('birthDate').setAttribute('max', new Date().toISOString().split('T')[0]);
 
-        // Toast notification function
+        // Question tag selection
+        document.querySelectorAll('.question-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('active');
+                const question = tag.dataset.question;
+                if (tag.classList.contains('active')) {
+                    if (!selectedQuestions.includes(question)) {
+                        selectedQuestions.push(question);
+                    }
+                } else {
+                    selectedQuestions = selectedQuestions.filter(q => q !== question);
+                }
+            });
+        });
+
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('active');
-            setTimeout(() => {
-                toast.classList.remove('active');
-            }, 2500);
+            setTimeout(() => toast.classList.remove('active'), 2500);
+        }
+
+        function getLoadingText(lang) {
+            const texts = {
+                hindi: { main: 'ग्रहों से पूछ रहे हैं...', sub: 'कुंडली का विश्लेषण हो रहा है' },
+                tamil: { main: 'நட்சத்திரங்களை ஆலோசிக்கிறது...', sub: 'ஜாதகம் பகுப்பாய்வு' },
+                telugu: { main: 'నక్షత్రాలను సంప్రదిస్తోంది...', sub: 'జాతకం విశ్లేషణ' },
+                malayalam: { main: 'നക്ഷത്രങ്ങളോട് ചോദിക്കുന്നു...', sub: 'ജാതകം വിശകലനം' },
+                kannada: { main: 'ನಕ್ಷತ್ರಗಳನ್ನು ಸಮಾಲೋಚಿಸಲಾಗುತ್ತಿದೆ...', sub: 'ಜಾತಕ ವಿಶ್ಲೇಷಣೆ' },
+                bengali: { main: 'তারাদের সাথে পরামর্শ করা হচ্ছে...', sub: 'জন্মকুণ্ডলী বিশ্লেষণ' },
+                marathi: { main: 'ग्रहांशी बोलत आहे...', sub: 'कुंडली विश्लेषण' },
+                gujarati: { main: 'તારાઓને પૂછી રહ્યા છીએ...', sub: 'જન્માક્ષર વિશ્લેષણ' },
+                punjabi: { main: 'ਤਾਰਿਆਂ ਨਾਲ ਸਲਾਹ ਕਰ ਰਹੇ ਹਾਂ...', sub: 'ਜਨਮ ਕੁੰਡਲੀ ਵਿਸ਼ਲੇਸ਼ਣ' },
+                odia: { main: 'ତାରାମାନଙ୍କୁ ପଚାରୁଛି...', sub: 'ଜନ୍ମକୁଣ୍ଡଳୀ ବିଶ୍ଳେଷଣ' },
+                assamese: { main: 'তৰাবোৰৰ সৈতে পৰামৰ্শ কৰা হৈছে...', sub: 'জন্মকুণ্ডলী বিশ্লেষণ' },
+                english: { main: 'Consulting the Stars...', sub: 'Analyzing your birth chart' }
+            };
+            return texts[lang] || texts.english;
         }
 
         // Form submission
         document.getElementById('birthForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+            await submitReading();
+        });
+
+        async function submitReading(customQuestionOverride = null) {
             const name = document.getElementById('birthName').value.trim();
             const birthDate = document.getElementById('birthDate').value;
             const birthTime = document.getElementById('birthTime').value;
             const birthPlace = document.getElementById('birthPlace').value.trim();
+            const language = document.getElementById('language').value;
+            const gender = document.getElementById('gender').value;
+            const customQuestion = customQuestionOverride || document.getElementById('customQuestion').value.trim();
+
+            // Build question string
+            let questionsText = '';
+            if (selectedQuestions.length > 0) {
+                questionsText = selectedQuestions.map(q => questionMappings[q]).join(' ');
+            }
+            if (customQuestion) {
+                questionsText += ' ' + customQuestion;
+            }
+            if (!questionsText) {
+                questionsText = questionMappings.general;
+            }
 
             const errorDiv = document.getElementById('errorMessage');
             const submitBtn = document.getElementById('submitBtn');
-            
+
             errorDiv.classList.remove('active');
             submitBtn.disabled = true;
 
-            // Show loading
-            document.getElementById('loadingOverlay').classList.add('active');
+            // Update loading text based on language
+            const loadingTexts = getLoadingText(language);
+            document.getElementById('loadingText').textContent = loadingTexts.main;
+            document.getElementById('loadingSubtext').textContent = loadingTexts.sub;
 
-            // Prevent scrolling while loading
+            document.getElementById('loadingOverlay').classList.add('active');
             document.body.style.overflow = 'hidden';
 
+            // Store user data for follow-up questions
+            currentUserData = { name, birthDate, birthTime, birthPlace, language, gender };
+
             try {
-                // Call backend API
-                const response = await fetch(`${API_BASE_URL}/api/reading`, {
+                const response = await fetch('/api/reading', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        name,
-                        birthDate,
-                        birthTime,
-                        birthPlace
+                        name, birthDate, birthTime, birthPlace, language, gender,
+                        questions: questionsText
                     })
                 });
 
                 const result = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(result.message || 'Failed to get your cosmic reading');
-                }
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Something went wrong');
-                }
+                if (!response.ok) throw new Error(result.message || 'Failed to get reading');
+                if (!result.success) throw new Error(result.message || 'Something went wrong');
 
                 const data = result.data;
-
-                // Store data for sharing
                 window.currentReading = data;
 
-                // Update UI with results
+                // Update UI
                 document.getElementById('zodiacSymbol').innerHTML = `
                     <svg viewBox="0 0 100 100">
                         <defs>
                             <filter id="glow">
                                 <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
+                                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                             </filter>
                         </defs>
                         <circle cx="50" cy="50" r="45" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.5"/>
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.3"/>
                         <text x="50" y="62" text-anchor="middle" font-size="45" fill="#D4AF37" filter="url(#glow)">${data.zodiac.symbol}</text>
                     </svg>
                 `;
                 document.getElementById('sunSign').textContent = data.zodiac.name;
                 document.getElementById('elementBadge').textContent = `${data.zodiac.element} Element`;
                 document.getElementById('lifePathBadge').textContent = `Life Path ${data.lifePathNumber}`;
+                document.getElementById('languageBadge').textContent = languageNames[language];
                 document.getElementById('birthInfo').innerHTML = 
                     `<strong>${data.name}</strong><br>Born ${data.birthDate} at ${data.birthTime}<br>${data.birthPlace}`;
-                
-                // Format the reading content
+
+                // Show question if asked
+                if (questionsText && questionsText !== questionMappings.general) {
+                    document.getElementById('userQuestionSection').style.display = 'block';
+                    document.getElementById('userQuestionText').textContent = customQuestion || selectedQuestions.map(q => q.charAt(0).toUpperCase() + q.slice(1)).join(', ');
+                } else {
+                    document.getElementById('userQuestionSection').style.display = 'none';
+                }
+
                 let formattedReading = data.reading
                     .replace(/\*\*([^*]+)\*\*/g, '<div class="reading-section-title">$1</div>')
                     .replace(/\n\n/g, '</p><p>')
                     .replace(/\n/g, '<br>');
-                
-                document.getElementById('readingContent').innerHTML = `<p>${formattedReading}</p>`;
 
-                // Hide input, show results
+                document.getElementById('readingContent').innerHTML = `<p>${formattedReading}</p>`;
                 document.getElementById('inputCard').style.display = 'none';
                 document.getElementById('resultsContainer').classList.add('active');
-
-                // Scroll to top of results
+                document.getElementById('questionModal').classList.remove('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
             } catch (error) {
-                console.error('Error:', error);
-                errorDiv.textContent = error.message || 'The cosmic connection was interrupted. Please try again.';
+                errorDiv.textContent = error.message || 'Connection failed. Please try again.';
                 errorDiv.classList.add('active');
             } finally {
                 document.getElementById('loadingOverlay').classList.remove('active');
                 document.body.style.overflow = '';
                 submitBtn.disabled = false;
             }
-        });
+        }
 
-        // New reading button
+        // New reading
         document.getElementById('newReadingBtn').addEventListener('click', () => {
             document.getElementById('resultsContainer').classList.remove('active');
             document.getElementById('inputCard').style.display = 'block';
             document.getElementById('birthForm').reset();
+            selectedQuestions = [];
+            document.querySelectorAll('.question-tag').forEach(t => t.classList.remove('active'));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // Share button
+        // Ask another question
+        document.getElementById('askAnotherBtn').addEventListener('click', () => {
+            // Clone question tags to modal
+            const modalTags = document.getElementById('modalQuestionTags');
+            modalTags.innerHTML = '';
+            Object.keys(questionMappings).forEach(key => {
+                if (key !== 'general') {
+                    const tag = document.createElement('span');
+                    tag.className = 'question-tag';
+                    tag.dataset.question = key;
+                    tag.textContent = document.querySelector(`.question-tag[data-question="${key}"]`).textContent;
+                    tag.addEventListener('click', () => {
+                        document.querySelectorAll('#modalQuestionTags .question-tag').forEach(t => t.classList.remove('active'));
+                        tag.classList.add('active');
+                    });
+                    modalTags.appendChild(tag);
+                }
+            });
+            document.getElementById('modalCustomQuestion').value = '';
+            document.getElementById('questionModal').classList.add('active');
+        });
+
+        // Modal submit
+        document.getElementById('modalSubmitBtn').addEventListener('click', async () => {
+            const activeTag = document.querySelector('#modalQuestionTags .question-tag.active');
+            const customQ = document.getElementById('modalCustomQuestion').value.trim();
+            
+            if (activeTag) {
+                selectedQuestions = [activeTag.dataset.question];
+            } else {
+                selectedQuestions = [];
+            }
+
+            if (currentUserData) {
+                document.getElementById('birthName').value = currentUserData.name;
+                document.getElementById('birthDate').value = currentUserData.birthDate;
+                document.getElementById('birthTime').value = currentUserData.birthTime;
+                document.getElementById('birthPlace').value = currentUserData.birthPlace;
+                document.getElementById('language').value = currentUserData.language;
+                document.getElementById('gender').value = currentUserData.gender;
+            }
+
+            await submitReading(customQ);
+        });
+
+        // Modal close
+        document.getElementById('modalCloseBtn').addEventListener('click', () => {
+            document.getElementById('questionModal').classList.remove('active');
+        });
+
+        // Share
         document.getElementById('shareBtn').addEventListener('click', async () => {
             const data = window.currentReading;
             if (!data) return;
 
-            const shareText = `✨ My Celestial Oracle Reading ✨\n\n` +
-                `🌟 Sun Sign: ${data.zodiac.name} ${data.zodiac.symbol}\n` +
-                `🔮 Element: ${data.zodiac.element}\n` +
-                `🌙 Life Path: ${data.lifePathNumber}\n\n` +
-                `Discover your cosmic destiny!`;
+            const shareText = `✨ My Celestial Oracle Reading ✨\n\n🌟 Sun Sign: ${data.zodiac.name} ${data.zodiac.symbol}\n🔮 Element: ${data.zodiac.element}\n🌙 Life Path: ${data.lifePathNumber}\n\nDiscover your cosmic destiny!`;
 
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: 'My Celestial Oracle Reading',
-                        text: shareText,
-                        url: window.location.href
-                    });
+                    await navigator.share({ title: 'My Astrology Reading', text: shareText, url: window.location.href });
                 } catch (err) {
                     if (err.name !== 'AbortError') {
-                        fallbackCopy(shareText);
+                        navigator.clipboard.writeText(shareText).then(() => showToast('✓ Copied!'));
                     }
                 }
             } else {
-                fallbackCopy(shareText);
+                navigator.clipboard.writeText(shareText).then(() => showToast('✓ Copied to clipboard!'));
             }
         });
 
-        function fallbackCopy(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('✓ Copied to clipboard!');
-            }).catch(() => {
-                showToast('Unable to copy');
-            });
-        }
-
-        // Check API health on load
-        async function checkApiHealth() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                const data = await response.json();
-                if (!data.hasApiKey) {
-                    console.warn('Warning: OpenAI API key not configured on server');
-                }
-            } catch (error) {
-                console.error('API health check failed:', error);
-            }
-        }
-        checkApiHealth();
-
-        // Handle viewport height for mobile browsers
         function setVH() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
         }
         setVH();
         window.addEventListener('resize', setVH);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(setVH, 100);
-        });
     </script>
 </body>
 </html>

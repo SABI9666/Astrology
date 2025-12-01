@@ -2,21 +2,27 @@ export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'GET') return res.status(405).json({ success: false });
+    if (req.method !== 'GET') {
+        return res.status(405).json({ success: false, message: 'Method not allowed' });
+    }
 
-    const upiId = "pradeeksha798-1@okhdfcbank";
-    const upiName = "COS 5";
-    const amount = "100"; // fixed price
+    // ✨ FIXED — Permanent UPI details
+    const upiId = "cn.sabin623-1@okicici";
+    const upiName = "Cn Sabin";   // Payee Name (Bank approved)
 
-    // Allow space, clean special characters
+    // Amount (₹100)
+    const amount = "100";
+
+    // Clean name but KEEP spaces
     const cleanName = upiName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 25);
 
-    // Unique transaction ID
+    // Unique transaction ID to avoid UPI rejection
     const txid = "TXN" + Date.now();
 
-    // Final UPI Parameters
+    // Build safe UPI param string
     const params =
         `pa=${upiId}` +
         `&pn=${encodeURIComponent(cleanName)}` +

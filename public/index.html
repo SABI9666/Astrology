@@ -7,399 +7,58 @@
     <title>Celestial Oracle | ज्योतिष</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold: #D4AF37;
-            --gold-light: #F4E4BC;
-            --midnight: #0d0618;
-            --purple: #1a0a2e;
-            --violet: #7b5ea7;
-            --white: #f8f4ff;
-            --green: #4CAF50;
-            --red: #f44336;
-            --whatsapp: #25D366;
-        }
+        :root { --gold: #D4AF37; --gold-light: #F4E4BC; --midnight: #0d0618; --purple: #1a0a2e; --violet: #7b5ea7; --white: #f8f4ff; --green: #4CAF50; --whatsapp: #25D366; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Noto Sans', sans-serif;
-            background: var(--midnight);
-            color: var(--white);
-            min-height: 100vh;
-        }
-        .stars {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .star {
-            position: absolute;
-            width: 2px; height: 2px;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s ease-in-out infinite;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-        .container {
-            position: relative;
-            z-index: 10;
-            max-width: 550px;
-            margin: 0 auto;
-            padding: 30px 16px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            font-family: 'Cinzel', serif;
-            color: var(--gold);
-            font-size: 1.7rem;
-            letter-spacing: 0.1em;
-            text-shadow: 0 0 20px rgba(212,175,55,0.5);
-        }
-        .header p {
-            color: var(--gold-light);
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-        .card {
-            background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,6,24,0.98));
-            border: 1px solid rgba(212,175,55,0.3);
-            border-radius: 16px;
-            padding: 25px 20px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
-        }
+        body { font-family: 'Noto Sans', sans-serif; background: var(--midnight); color: var(--white); min-height: 100vh; }
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s ease-in-out infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .container { position: relative; z-index: 10; max-width: 550px; margin: 0 auto; padding: 30px 16px; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.7rem; letter-spacing: 0.1em; text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+        .header p { color: var(--gold-light); opacity: 0.8; margin-top: 5px; }
+        .card { background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,6,24,0.98)); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 25px 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); }
         .form-group { margin-bottom: 16px; }
-        .form-label {
-            display: block;
-            font-family: 'Cinzel', serif;
-            font-size: 0.7rem;
-            color: var(--gold);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(212,175,55,0.25);
-            border-radius: 10px;
-            color: var(--white);
-            font-size: 16px;
-        }
-        .form-select { cursor: pointer; }
+        .form-label { display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .form-input, .form-select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 16px; }
         .form-select option { background: var(--purple); }
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--gold);
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .tag {
-            padding: 8px 12px;
-            background: rgba(123,94,167,0.15);
-            border: 1px solid rgba(123,94,167,0.3);
-            border-radius: 20px;
-            color: var(--violet);
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .tag.active {
-            background: var(--violet);
-            color: white;
-        }
-        textarea {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(212,175,55,0.25);
-            border-radius: 10px;
-            color: var(--white);
-            font-size: 15px;
-            min-height: 60px;
-            resize: vertical;
-        }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 10px;
-            font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.2s;
-        }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .tag { padding: 8px 12px; background: rgba(123,94,167,0.15); border: 1px solid rgba(123,94,167,0.3); border-radius: 20px; color: var(--violet); font-size: 0.8rem; cursor: pointer; }
+        .tag.active { background: var(--violet); color: white; }
+        textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 15px; min-height: 60px; resize: vertical; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-family: 'Cinzel', serif; font-size: 0.95rem; cursor: pointer; margin-top: 10px; }
         .btn:active { transform: scale(0.98); }
-        .btn-gold {
-            background: linear-gradient(135deg, var(--gold), #c9a227);
-            color: var(--midnight);
-            font-weight: 600;
-        }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Loading */
-        .loading {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(13,6,24,0.97);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
+        .btn-gold { background: linear-gradient(135deg, var(--gold), #c9a227); color: var(--midnight); font-weight: 600; }
+        .loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.97); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
         .loading.active { display: flex; }
-        .spinner {
-            width: 60px; height: 60px;
-            border: 3px solid rgba(212,175,55,0.2);
-            border-top-color: var(--gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+        .spinner { width: 60px; height: 60px; border: 3px solid rgba(212,175,55,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading p {
-            margin-top: 20px;
-            color: var(--gold);
-            font-family: 'Cinzel', serif;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(13,6,24,0.98);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        .loading p { margin-top: 20px; color: var(--gold); font-family: 'Cinzel', serif; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.98); z-index: 200; justify-content: center; align-items: center; padding: 20px; }
         .modal.active { display: flex; }
-        .modal-card {
-            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,6,24,0.99));
-            border: 1px solid rgba(212,175,55,0.3);
-            border-radius: 20px;
-            padding: 30px 25px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+        .modal-card { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,6,24,0.99)); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; padding: 30px 25px; max-width: 400px; width: 100%; text-align: center; }
         .modal-icon { font-size: 3rem; margin-bottom: 10px; }
-        .modal-title {
-            font-family: 'Cinzel', serif;
-            color: var(--gold);
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-        .amount {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--green);
-            margin: 15px 0;
-        }
-        .upi-box {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(212,175,55,0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .upi-label {
-            font-size: 0.75rem;
-            color: var(--gold-light);
-            opacity: 0.7;
-            margin-bottom: 8px;
-        }
-        .upi-id {
-            font-family: monospace;
-            font-size: 1.1rem;
-            color: var(--gold);
-            word-break: break-all;
-            margin-bottom: 15px;
-        }
-        .copy-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--gold), #c9a227);
-            border: none;
-            border-radius: 10px;
-            color: var(--midnight);
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-        .upi-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .upi-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 20px;
-            border-radius: 12px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: transform 0.2s, opacity 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .upi-btn:active { transform: scale(0.97); opacity: 0.9; }
-        .upi-btn.gpay { background: linear-gradient(135deg, #4285F4, #34A853); }
-        .upi-btn.phonepe { background: linear-gradient(135deg, #5f259f, #8b5cf6); }
-        .upi-btn.paytm { background: linear-gradient(135deg, #00BAF2, #0078D4); }
-        .upi-btn.allupi { background: linear-gradient(135deg, #ff9800, #e65100); }
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            color: var(--gold-light);
-            opacity: 0.5;
-            font-size: 0.75rem;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(212,175,55,0.3);
-        }
-        .divider span { padding: 0 12px; }
-        .verify-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--whatsapp), #128C7E);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .cancel-btn {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            border: 1px solid rgba(255,100,100,0.4);
-            border-radius: 10px;
-            color: #ff9999;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .warning {
-            background: rgba(244,67,54,0.1);
-            border: 1px solid rgba(244,67,54,0.3);
-            border-radius: 10px;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 0.8rem;
-            color: #ff9999;
-        }
-        .info-box {
-            background: rgba(37,211,102,0.1);
-            border: 1px solid rgba(37,211,102,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 0.85rem;
-            color: #a5d6a7;
-            line-height: 1.6;
-        }
+        .modal-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem; margin-bottom: 5px; }
+        .amount { font-size: 2.5rem; font-weight: 700; color: var(--green); margin: 15px 0; }
+        .info-box { background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.3); border-radius: 10px; padding: 15px; margin: 15px 0; font-size: 0.85rem; color: #a5d6a7; line-height: 1.6; }
+        .verify-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--gold), #c9a227); border: none; border-radius: 10px; color: #000; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: block; text-align: center; }
+        .cancel-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(255,100,100,0.4); border-radius: 10px; color: #ff9999; font-size: 0.85rem; cursor: pointer; margin-top: 10px; }
         .success-icon { font-size: 4rem; margin-bottom: 15px; }
-        .steps-list {
-            text-align: left;
-            background: rgba(0,0,0,0.2);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .step {
-            display: flex;
-            gap: 12px;
-            margin: 12px 0;
-            align-items: flex-start;
-        }
-        .step-num {
-            width: 28px;
-            height: 28px;
-            background: var(--gold);
-            color: var(--midnight);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-        }
+        .steps-list { text-align: left; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .step { display: flex; gap: 12px; margin: 12px 0; align-items: flex-start; }
+        .step-num { width: 28px; height: 28px; background: var(--gold); color: var(--midnight); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
         .step-text { font-size: 0.9rem; line-height: 1.5; }
-        .error {
-            background: rgba(244,67,54,0.2);
-            border: 1px solid rgba(244,67,54,0.5);
-            border-radius: 10px;
-            padding: 12px;
-            color: #ff9999;
-            margin-top: 15px;
-            display: none;
-            text-align: center;
-        }
+        .error { background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 10px; padding: 12px; color: #ff9999; margin-top: 15px; display: none; text-align: center; }
         .error.active { display: block; }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(26,10,46,0.95);
-            border: 1px solid var(--gold);
-            border-radius: 8px;
-            padding: 10px 20px;
-            color: var(--gold);
-            z-index: 300;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        .toast.active {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26,10,46,0.95); border: 1px solid var(--gold); border-radius: 8px; padding: 10px 20px; color: var(--gold); z-index: 300; opacity: 0; transition: all 0.3s; }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
     <div class="stars" id="stars"></div>
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p id="loadingText">Consulting the Stars...</p>
-    </div>
+    <div class="loading" id="loading"><div class="spinner"></div><p id="loadingText">Consulting the Stars...</p></div>
     <div class="toast" id="toast"></div>
 
     <!-- Payment Modal -->
@@ -407,47 +66,9 @@
         <div class="modal-card">
             <div class="modal-icon">🔮</div>
             <h2 class="modal-title">Complete Payment</h2>
-            <div class="amount" id="amount">₹100.00</div>
-
-            <div class="upi-buttons">
-                <button class="upi-btn gpay" id="gpayBtn">
-                    <span>📱</span>
-                    <span>Pay with Google Pay</span>
-                </button>
-                <button class="upi-btn phonepe" id="phonepeBtn">
-                    <span>💜</span>
-                    <span>Pay with PhonePe</span>
-                </button>
-                <button class="upi-btn paytm" id="paytmBtn">
-                    <span>💙</span>
-                    <span>Pay with Paytm</span>
-                </button>
-                <button class="upi-btn allupi" id="allUpiBtn">
-                    <span>🏦</span>
-                    <span>Other UPI Apps</span>
-                </button>
-            </div>
-
-            <div class="divider"><span>or pay manually</span></div>
-
-            <div class="upi-box">
-                <div class="upi-label">UPI ID:</div>
-                <div class="upi-id" id="upiId">Loading...</div>
-                <button class="copy-btn" id="copyBtn">📋 Copy UPI ID</button>
-            </div>
-
-            <p style="font-size: 0.8rem; color: var(--gold-light); opacity: 0.7; margin: 10px 0;">
-                Open your UPI app → Pay to above UPI ID → Enter ₹<span id="amountText">100.00</span>
-            </p>
-
-            <div class="warning">
-                ⚠️ Click below ONLY after payment is complete
-            </div>
-
-            <button class="verify-btn" id="verifyBtn">
-                <span>📱</span>
-                <span>I Have Paid → Verify on WhatsApp</span>
-            </button>
+            <div class="amount" id="amount">₹100</div>
+            <div class="info-box">Pay via any UPI app (GPay, PhonePe, Paytm)<br>UPI ID will be copied automatically!</div>
+            <a href="#" class="verify-btn" id="payNowBtn">💳 Proceed to Pay</a>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
         </div>
     </div>
@@ -457,30 +78,13 @@
         <div class="modal-card">
             <div class="success-icon">✅</div>
             <h2 class="modal-title">Request Sent!</h2>
-            
-            <div class="info-box">
-                Your verification request has been sent via WhatsApp!
-            </div>
-
+            <div class="info-box">Your verification request has been sent via WhatsApp!</div>
             <div class="steps-list">
-                <div class="step">
-                    <span class="step-num">1</span>
-                    <span class="step-text">Make sure you <strong>send</strong> the WhatsApp message</span>
-                </div>
-                <div class="step">
-                    <span class="step-num">2</span>
-                    <span class="step-text">Admin will verify your payment (few minutes)</span>
-                </div>
-                <div class="step">
-                    <span class="step-num">3</span>
-                    <span class="step-text">You'll receive <strong>reading link + PDF</strong> on WhatsApp</span>
-                </div>
+                <div class="step"><span class="step-num">1</span><span class="step-text">Make sure you <strong>send</strong> the WhatsApp message</span></div>
+                <div class="step"><span class="step-num">2</span><span class="step-text">Admin will verify your payment</span></div>
+                <div class="step"><span class="step-num">3</span><span class="step-text">You'll receive <strong>reading link + PDF</strong> on WhatsApp</span></div>
             </div>
-
-            <button class="verify-btn" id="resendBtn" style="background: linear-gradient(135deg, var(--whatsapp), #128C7E);">
-                📱 Resend WhatsApp Message
-            </button>
-
+            <button class="verify-btn" id="resendBtn" style="background: linear-gradient(135deg, #25D366, #128C7E); color: #fff;">📱 Resend WhatsApp Message</button>
             <button class="cancel-btn" id="newRequestBtn">← Start New Request</button>
         </div>
     </div>
@@ -490,8 +94,7 @@
             <h1>✨ CELESTIAL ORACLE</h1>
             <p>ज्योतिष | Jyotish | ജ്യോതിഷം</p>
         </div>
-
-        <div class="card" id="inputCard">
+        <div class="card">
             <form id="mainForm">
                 <div class="form-group">
                     <label class="form-label">🌐 Language</label>
@@ -508,12 +111,10 @@
                         <option value="punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">Your Name</label>
                     <input type="text" id="name" class="form-input" placeholder="Enter your name" required maxlength="50">
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">Gender</label>
                     <select id="gender" class="form-select">
@@ -522,7 +123,6 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Date of Birth</label>
@@ -533,12 +133,10 @@
                         <input type="time" id="tob" class="form-input" required>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">Place of Birth</label>
                     <input type="text" id="pob" class="form-input" placeholder="City, State, Country" required maxlength="100">
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">🔮 What do you want to know?</label>
                     <div class="tags" id="tags">
@@ -555,238 +153,134 @@
                     </div>
                     <textarea id="customQ" placeholder="Or type your specific question..."></textarea>
                 </div>
-
                 <button type="submit" class="btn btn-gold">🔮 Get My Reading</button>
                 <div class="error" id="error"></div>
             </form>
         </div>
     </div>
 
-    <script>
-        let selectedTags = [];
-        let userData = null;
-        let paymentUrls = {};
-        let whatsappUrl = null;
+<script>
+var selectedTags = [];
+var whatsappUrl = null;
+var questionMap = { marriage: "Marriage predictions", job: "Job predictions", career: "Career growth", wealth: "Wealth prospects", health: "Health predictions", love: "Love life", education: "Education success", children: "Children predictions", foreign: "Foreign travel", business: "Business success" };
 
-        const questionMap = {
-            marriage: "Marriage predictions",
-            job: "Job predictions",
-            career: "Career growth",
-            wealth: "Wealth prospects",
-            health: "Health predictions",
-            love: "Love life",
-            education: "Education success",
-            children: "Children predictions",
-            foreign: "Foreign travel",
-            business: "Business success"
-        };
+// Stars
+(function() { var c = document.getElementById('stars'); for (var i = 0; i < 80; i++) { var s = document.createElement('div'); s.className = 'star'; s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%'; s.style.animationDelay = Math.random() * 3 + 's'; c.appendChild(s); } })();
 
-        // Create stars
-        (function() {
-            const c = document.getElementById('stars');
-            for (let i = 0; i < 80; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.top = Math.random() * 100 + '%';
-                s.style.animationDelay = Math.random() * 3 + 's';
-                c.appendChild(s);
-            }
-        })();
+document.getElementById('dob').max = new Date().toISOString().split('T')[0];
 
-        document.getElementById('dob').max = new Date().toISOString().split('T')[0];
+// Tags
+document.querySelectorAll('.tag').forEach(function(tag) {
+    tag.onclick = function() {
+        this.classList.toggle('active');
+        var q = this.dataset.q;
+        if (this.classList.contains('active')) { if (selectedTags.indexOf(q) === -1) selectedTags.push(q); }
+        else { selectedTags = selectedTags.filter(function(t) { return t !== q; }); }
+    };
+});
 
-        // Tag selection
-        document.querySelectorAll('.tag').forEach(tag => {
-            tag.onclick = function() {
-                this.classList.toggle('active');
-                const q = this.dataset.q;
-                if (this.classList.contains('active')) {
-                    if (!selectedTags.includes(q)) selectedTags.push(q);
-                } else {
-                    selectedTags = selectedTags.filter(t => t !== q);
-                }
-            };
+function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('active'); setTimeout(function() { t.classList.remove('active'); }, 3000); }
+function showError(msg) { var e = document.getElementById('error'); e.textContent = msg; e.classList.add('active'); setTimeout(function() { e.classList.remove('active'); }, 5000); }
+
+// Check if returning from payment
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('verify') === '1') {
+        // Clear URL
+        window.history.replaceState({}, '', '/');
+        
+        // Get stored user data
+        var stored = sessionStorage.getItem('celestial_user');
+        if (stored) {
+            var userData = JSON.parse(stored);
+            sendVerification(userData);
+        } else {
+            showToast('Session expired. Please fill form again.');
+        }
+    }
+})();
+
+function sendVerification(userData) {
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('loadingText').textContent = 'Sending to WhatsApp...';
+
+    fetch('/api/verify-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+        if (!result.success) throw new Error(result.message || 'Failed');
+        whatsappUrl = result.data.whatsappUrl;
+        window.open(whatsappUrl, '_blank');
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('successModal').classList.add('active');
+        showToast('WhatsApp opened!');
+    })
+    .catch(function(err) {
+        document.getElementById('loading').classList.remove('active');
+        showError(err.message || 'Error');
+    });
+}
+
+// Form submit
+document.getElementById('mainForm').onsubmit = function(e) {
+    e.preventDefault();
+    var name = document.getElementById('name').value.trim();
+    var dob = document.getElementById('dob').value;
+    var tob = document.getElementById('tob').value;
+    var pob = document.getElementById('pob').value.trim();
+    if (!name || !dob || !tob || !pob) { showError('Please fill all fields'); return; }
+
+    var questions = selectedTags.map(function(t) { return questionMap[t] || ''; }).join(', ');
+    var customQ = document.getElementById('customQ').value.trim();
+    if (customQ) questions += (questions ? '. ' : '') + customQ;
+    if (!questions) questions = 'Complete life reading';
+
+    var userData = { name: name, birthDate: dob, birthTime: tob, birthPlace: pob, language: document.getElementById('language').value, gender: document.getElementById('gender').value, questions: questions };
+
+    // Store in sessionStorage for after payment
+    sessionStorage.setItem('celestial_user', JSON.stringify(userData));
+
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('loadingText').textContent = 'Preparing payment...';
+
+    fetch('/api/payment')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (!data.success) throw new Error(data.message);
+            document.getElementById('amount').textContent = '₹' + data.data.amount;
+            document.getElementById('payNowBtn').href = data.data.urls.upi;
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('paymentModal').classList.add('active');
+        })
+        .catch(function(err) {
+            document.getElementById('loading').classList.remove('active');
+            showError(err.message || 'Payment error');
         });
+};
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 3000);
-        }
-
-        function showError(msg) {
-            const e = document.getElementById('error');
-            e.textContent = msg;
-            e.classList.add('active');
-            setTimeout(() => e.classList.remove('active'), 5000);
-        }
-
-        // Open UPI app
-        function openUpiApp(url, appName) {
-            if (!url) {
-                showToast('Payment not ready');
-                return;
-            }
-            
-            showToast(`Opening ${appName}...`);
-            
-            // For mobile, use location.href for better UPI handling
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                // Try to open the app
-                window.location.href = url;
-                
-                // Fallback message after delay
-                setTimeout(() => {
-                    if (document.hasFocus()) {
-                        showToast(`If ${appName} didn't open, use "Other UPI Apps" or copy UPI ID`);
-                    }
-                }, 3000);
-            } else {
-                showToast('Please use a mobile device for UPI payment');
-            }
-        }
-
-        // UPI button handlers
-        document.getElementById('gpayBtn').onclick = () => openUpiApp(paymentUrls.gpay, 'Google Pay');
-        document.getElementById('phonepeBtn').onclick = () => openUpiApp(paymentUrls.phonepe, 'PhonePe');
-        document.getElementById('paytmBtn').onclick = () => openUpiApp(paymentUrls.paytm, 'Paytm');
-        document.getElementById('allUpiBtn').onclick = () => openUpiApp(paymentUrls.upi, 'UPI App');
-
-        // Form submit
-        document.getElementById('mainForm').onsubmit = async function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('name').value.trim();
-            const dob = document.getElementById('dob').value;
-            const tob = document.getElementById('tob').value;
-            const pob = document.getElementById('pob').value.trim();
-
-            if (!name || !dob || !tob || !pob) {
-                showError('Please fill all fields');
-                return;
-            }
-
-            let questions = selectedTags.map(t => questionMap[t] || '').join(', ');
-            const customQ = document.getElementById('customQ').value.trim();
-            if (customQ) questions += (questions ? '. ' : '') + customQ;
-            if (!questions) questions = 'Complete life reading';
-
-            userData = {
-                name, 
-                birthDate: dob, 
-                birthTime: tob, 
-                birthPlace: pob,
-                language: document.getElementById('language').value,
-                gender: document.getElementById('gender').value,
-                questions: questions
-            };
-
-            document.getElementById('loading').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Preparing payment...';
-
-            try {
-                const res = await fetch('/api/payment');
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.message);
-
-                // Store payment URLs
-                paymentUrls = data.data.urls;
-                
-                // Update UI
-                document.getElementById('amount').textContent = '₹' + data.data.amount;
-                document.getElementById('amountText').textContent = data.data.amount;
-                document.getElementById('upiId').textContent = data.data.upiId;
-
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('paymentModal').classList.add('active');
-
-            } catch (err) {
-                document.getElementById('loading').classList.remove('active');
-                showError(err.message || 'Payment error');
-            }
-        };
-
-        // Copy UPI
-        document.getElementById('copyBtn').onclick = function() {
-            const upiId = document.getElementById('upiId').textContent;
-            navigator.clipboard.writeText(upiId).then(() => {
-                this.textContent = '✓ Copied!';
-                showToast('UPI ID copied!');
-                setTimeout(() => this.textContent = '📋 Copy UPI ID', 2000);
-            });
-        };
-
-        // Cancel
-        document.getElementById('cancelBtn').onclick = function() {
-            document.getElementById('paymentModal').classList.remove('active');
-        };
-
-        // Verify - Send to WhatsApp
-        document.getElementById('verifyBtn').onclick = async function() {
-            if (!userData) {
-                showToast('Please fill the form first');
-                document.getElementById('paymentModal').classList.remove('active');
-                return;
-            }
-
-            document.getElementById('paymentModal').classList.remove('active');
-            document.getElementById('loading').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Creating verification...';
-
-            try {
-                const res = await fetch('/api/verify-request', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userData)
-                });
-
-                const result = await res.json();
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to create verification');
-                }
-
-                whatsappUrl = result.data.whatsappUrl;
-
-                // Open WhatsApp
-                window.open(whatsappUrl, '_blank');
-
-                // Show success modal
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('successModal').classList.add('active');
-
-                showToast('WhatsApp opened! Please send the message.');
-
-            } catch (err) {
-                document.getElementById('loading').classList.remove('active');
-                showError(err.message || 'Error creating verification');
-            }
-        };
-
-        // Resend WhatsApp
-        document.getElementById('resendBtn').onclick = function() {
-            if (whatsappUrl) {
-                window.open(whatsappUrl, '_blank');
-                showToast('WhatsApp opened!');
-            } else {
-                showToast('Please start a new request');
-            }
-        };
-
-        // New Request
-        document.getElementById('newRequestBtn').onclick = function() {
-            document.getElementById('successModal').classList.remove('active');
-            document.getElementById('mainForm').reset();
-            selectedTags = [];
-            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-            userData = null;
-            whatsappUrl = null;
-        };
-    </script>
+document.getElementById('cancelBtn').onclick = function() { document.getElementById('paymentModal').classList.remove('active'); };
+document.getElementById('resendBtn').onclick = function() { if (whatsappUrl) { window.open(whatsappUrl, '_blank'); showToast('WhatsApp opened!'); } };
+document.getElementById('newRequestBtn').onclick = function() {
+    document.getElementById('successModal').classList.remove('active');
+    document.getElementById('mainForm').reset();
+    selectedTags = [];
+    document.querySelectorAll('.tag').forEach(function(t) { t.classList.remove('active'); });
+    sessionStorage.removeItem('celestial_user');
+    whatsappUrl = null;
+};
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

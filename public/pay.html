@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redirecting...</title>
+</head>
+<body>
+<script>
+    // Get all params - they get split because & is not encoded
+    const params = new URLSearchParams(window.location.search);
+    const baseUrl = params.get("url");
+    
+    if (baseUrl) {
+        // Reconstruct full UPI URL from split params
+        let fullUrl = baseUrl;
+        const pn = params.get("pn");
+        const am = params.get("am");
+        const cu = params.get("cu");
+        const tn = params.get("tn");
+        
+        if (pn) fullUrl += "&pn=" + pn;
+        if (am) fullUrl += "&am=" + am;
+        if (cu) fullUrl += "&cu=" + cu;
+        if (tn) fullUrl += "&tn=" + tn;
+        
+        window.location.href = fullUrl;
+    } else {
+        document.body.innerHTML = "Invalid payment link.";
+    }
+</script>
+</body>
+</html>

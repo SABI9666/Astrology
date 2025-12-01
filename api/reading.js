@@ -1,53 +1,40 @@
-// Secure Reading API with validation and rate limiting
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const MAX_REQUESTS = 5; // max 5 readings per minute per IP
+// Secure Reading API - Requires valid payment token
 
 export default async function handler(req, res) {
-    // Security headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
 
-    // Rate limiting
-    const clientIP = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown';
-    const now = Date.now();
-    
-    if (rateLimitMap.has(clientIP)) {
-        const clientData = rateLimitMap.get(clientIP);
-        if (now - clientData.firstRequest < RATE_LIMIT_WINDOW) {
-            if (clientData.count >= MAX_REQUESTS) {
-                return res.status(429).json({ 
-                    success: false, 
-                    message: 'Too many requests. Please wait before requesting another reading.' 
-                });
-            }
-            clientData.count++;
-        } else {
-            rateLimitMap.set(clientIP, { firstRequest: now, count: 1 });
-        }
-    } else {
-        rateLimitMap.set(clientIP, { firstRequest: now, count: 1 });
-    }
-
     try {
-        const { name, birthDate, birthTime, birthPlace, language, gender, questions } = req.body;
+        const { name, birthDate, birthTime, birthPlace, language, gender, questions, paymentToken } = req.body;
 
-        // Input validation
+        // SECURITY: Verify payment token first
+        if (!paymentToken) {
+            return res.status(401).json({ success: false, message: 'Payment required' });
+        }
+
+        // Verify token with payment API
+        const tokenVerify = await fetch(`https://${req.headers.host}/api/payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: paymentToken })
+        });
+
+        const tokenResult = await tokenVerify.json();
+        
+        if (!tokenResult.success || !tokenResult.valid) {
+            return res.status(401).json({ success: false, message: 'Invalid payment. Please pay first.' });
+        }
+
+        // Validate required inputs
         if (!name || !birthDate || !birthTime || !birthPlace) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Missing required fields' 
-            });
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
         // Sanitize inputs
@@ -59,18 +46,14 @@ export default async function handler(req, res) {
         const safeName = sanitize(name, 50);
         const safeBirthPlace = sanitize(birthPlace, 100);
         const safeQuestions = sanitize(questions, 500);
-        const safeLanguage = ['english', 'hindi', 'tamil', 'telugu', 'malayalam', 'kannada', 'bengali', 'marathi', 'gujarati', 'punjabi', 'odia', 'assamese'].includes(language) ? language : 'english';
+        
+        const validLangs = ['english', 'hindi', 'tamil', 'telugu', 'malayalam', 'kannada', 'bengali', 'marathi', 'gujarati', 'punjabi'];
+        const safeLanguage = validLangs.includes(language) ? language : 'english';
         const safeGender = ['male', 'female', 'other'].includes(gender) ? gender : 'other';
 
-        // Validate date format
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        const timeRegex = /^\d{2}:\d{2}$/;
-        
-        if (!dateRegex.test(birthDate) || !timeRegex.test(birthTime)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid date or time format' 
-            });
+        // Validate date/time format
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || !/^\d{2}:\d{2}$/.test(birthTime)) {
+            return res.status(400).json({ success: false, message: 'Invalid date or time' });
         }
 
         // Calculate zodiac
@@ -95,21 +78,16 @@ export default async function handler(req, res) {
 
         let zodiac = zodiacSigns[0];
         for (const sign of zodiacSigns) {
-            const [startMonth, startDay] = sign.start;
-            const [endMonth, endDay] = sign.end;
-            
-            if (startMonth === 12 && endMonth === 1) {
-                if ((month === 12 && day >= startDay) || (month === 1 && day <= endDay)) {
-                    zodiac = sign;
-                    break;
-                }
-            } else if ((month === startMonth && day >= startDay) || (month === endMonth && day <= endDay)) {
-                zodiac = sign;
-                break;
+            const [sm, sd] = sign.start;
+            const [em, ed] = sign.end;
+            if (sm === 12 && em === 1) {
+                if ((month === 12 && day >= sd) || (month === 1 && day <= ed)) { zodiac = sign; break; }
+            } else if ((month === sm && day >= sd) || (month === em && day <= ed)) {
+                zodiac = sign; break;
             }
         }
 
-        // Calculate life path number
+        // Life path number
         const digits = birthDate.replace(/-/g, '').split('').map(Number);
         let lifePathNumber = digits.reduce((a, b) => a + b, 0);
         while (lifePathNumber > 9 && lifePathNumber !== 11 && lifePathNumber !== 22) {
@@ -119,48 +97,36 @@ export default async function handler(req, res) {
         // Check API key
         const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) {
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Service temporarily unavailable' 
-            });
+            return res.status(500).json({ success: false, message: 'Service unavailable' });
         }
 
-        // Language instructions
-        const languageInstructions = {
-            english: 'Respond entirely in English.',
-            hindi: 'Respond entirely in Hindi (हिंदी में).',
-            tamil: 'Respond entirely in Tamil (தமிழில்).',
-            telugu: 'Respond entirely in Telugu (తెలుగులో).',
-            malayalam: 'Respond entirely in Malayalam (മലയാളത്തിൽ).',
-            kannada: 'Respond entirely in Kannada (ಕನ್ನಡದಲ್ಲಿ).',
-            bengali: 'Respond entirely in Bengali (বাংলায়).',
-            marathi: 'Respond entirely in Marathi (मराठीत).',
-            gujarati: 'Respond entirely in Gujarati (ગુજરાતીમાં).',
-            punjabi: 'Respond entirely in Punjabi (ਪੰਜਾਬੀ ਵਿੱਚ).',
-            odia: 'Respond entirely in Odia (ଓଡ଼ିଆରେ).',
-            assamese: 'Respond entirely in Assamese (অসমীয়াত).'
+        // Language prompts
+        const langPrompts = {
+            english: 'Respond in English.',
+            hindi: 'Respond in Hindi (हिंदी में).',
+            tamil: 'Respond in Tamil (தமிழில்).',
+            telugu: 'Respond in Telugu (తెలుగులో).',
+            malayalam: 'Respond in Malayalam (മലയാളത്തിൽ).',
+            kannada: 'Respond in Kannada (ಕನ್ನಡದಲ್ಲಿ).',
+            bengali: 'Respond in Bengali (বাংলায়).',
+            marathi: 'Respond in Marathi (मराठीत).',
+            gujarati: 'Respond in Gujarati (ગુજરાતીમાં).',
+            punjabi: 'Respond in Punjabi (ਪੰਜਾਬੀ ਵਿੱਚ).'
         };
 
-        const prompt = `You are an expert Vedic astrologer. Provide a detailed, personalized reading.
+        const prompt = `You are an expert Vedic astrologer. Provide a detailed reading.
 
-**Person Details:**
-- Name: ${safeName}
-- Gender: ${safeGender}
-- Birth Date: ${birthDate}
-- Birth Time: ${birthTime}
-- Birth Place: ${safeBirthPlace}
-- Sun Sign: ${zodiac.name} (${zodiac.symbol})
-- Element: ${zodiac.element}
-- Life Path Number: ${lifePathNumber}
+**Person:** ${safeName} (${safeGender})
+**Birth:** ${birthDate} at ${birthTime}, ${safeBirthPlace}
+**Sign:** ${zodiac.name} (${zodiac.symbol}) - ${zodiac.element}
+**Life Path:** ${lifePathNumber}
 
-**Questions/Areas of Focus:**
-${safeQuestions || 'General life reading'}
+**Questions:** ${safeQuestions || 'Complete life reading'}
 
-${languageInstructions[safeLanguage]}
+${langPrompts[safeLanguage]}
 
-Provide specific predictions with timeframes. Use **Section Title** format for headings. Be encouraging but realistic.`;
+Give specific predictions with timeframes. Use **Section Title** format.`;
 
-        // Call OpenAI
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -170,7 +136,7 @@ Provide specific predictions with timeframes. Use **Section Title** format for h
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
-                    { role: 'system', content: 'You are an expert Vedic astrologer providing authentic, insightful readings.' },
+                    { role: 'system', content: 'You are an expert Vedic astrologer.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: 2000,
@@ -179,22 +145,14 @@ Provide specific predictions with timeframes. Use **Section Title** format for h
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('OpenAI error:', errorData);
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Unable to generate reading. Please try again.' 
-            });
+            return res.status(500).json({ success: false, message: 'Failed to generate reading' });
         }
 
         const data = await response.json();
         const reading = data.choices?.[0]?.message?.content;
 
         if (!reading) {
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Failed to generate reading' 
-            });
+            return res.status(500).json({ success: false, message: 'No reading generated' });
         }
 
         return res.status(200).json({
@@ -212,9 +170,6 @@ Provide specific predictions with timeframes. Use **Section Title** format for h
 
     } catch (error) {
         console.error('Reading error:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'An error occurred. Please try again.' 
-        });
+        return res.status(500).json({ success: false, message: 'Error generating reading' });
     }
 }

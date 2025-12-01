@@ -17,39 +17,36 @@ export default function handler(req, res) {
         });
     }
 
-    // Generate UPI payment URLs
-    const txnId = 'TXN' + Date.now() + Math.random().toString(36).substr(2, 9);
-    const note = 'Astrology Reading';
+    // Encode values properly for URL
+    const encodedName = encodeURIComponent(upiName);
+    const encodedNote = encodeURIComponent('Astrology Reading');
 
-    const params = new URLSearchParams({
-        pa: upiId,
-        pn: upiName,
-        am: amount,
-        cu: 'INR',
-        tn: note,
-        tr: txnId
-    });
-
-    const baseUpiUrl = `upi://pay?${params.toString()}`;
+    // Build UPI URL with proper encoding (no transaction ID - causes issues with some apps)
+    const upiParams = `pa=${upiId}&pn=${encodedName}&am=${amount}&cu=INR&tn=${encodedNote}`;
+    
+    // Base UPI URL (works with all UPI apps)
+    const baseUpiUrl = `upi://pay?${upiParams}`;
 
     // Generate QR code URL
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(baseUpiUrl)}`;
 
+    // Intent URLs for specific apps
     return res.status(200).json({
         success: true,
         data: {
             amount: amount,
-            txnId: txnId,
-            // Payment URLs for different apps
             urls: {
-                gpay: `gpay://upi/pay?${params.toString()}`,
-                phonepe: `phonepe://pay?${params.toString()}`,
-                paytm: `paytmmp://pay?${params.toString()}`,
+                // GPay intent - use tez:// for Google Pay
+                gpay: `tez://upi/pay?${upiParams}`,
+                // PhonePe intent
+                phonepe: `phonepe://pay?${upiParams}`,
+                // Paytm intent  
+                paytm: `paytmmp://upi/pay?${upiParams}`,
+                // Generic UPI - opens app chooser
                 upi: baseUpiUrl
             },
             qrCode: qrUrl,
-            // Only show masked UPI ID for display (security)
-            displayUpiId: upiId.replace(/(.{3}).*(@.*)/, '$1***$2')
+            upiId: upiId
         }
     });
 }

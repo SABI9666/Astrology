@@ -3,31 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Redirecting...</title>
+<title>Complete Payment</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #1a0a2e, #0d0618);
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .card {
+        background: rgba(255,255,255,0.05);
+        padding: 35px 30px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 380px;
+        width: 100%;
+        border: 1px solid rgba(212,175,55,0.3);
+    }
+    .icon { font-size: 4rem; margin-bottom: 15px; }
+    h2 { color: #D4AF37; margin-bottom: 10px; font-size: 1.3rem; }
+    p { color: #aaa; font-size: 0.95rem; margin: 10px 0; line-height: 1.5; }
+    .amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #4CAF50;
+        margin: 15px 0;
+    }
+    .info {
+        background: rgba(76,175,80,0.1);
+        border: 1px solid rgba(76,175,80,0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        font-size: 0.9rem;
+        color: #a5d6a7;
+    }
+    .btn {
+        display: block;
+        width: 100%;
+        padding: 16px 25px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.05rem;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        margin: 12px 0;
+        border: none;
+    }
+    .btn-blue {
+        background: linear-gradient(135deg, #4285F4, #34A853);
+        color: #fff;
+    }
+    .btn-green {
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: #fff;
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(212,175,55,0.5);
+        color: #D4AF37;
+        font-size: 0.9rem;
+        padding: 12px;
+    }
+    .hidden { display: none !important; }
+</style>
 </head>
 <body>
+    <div class="card" id="card">
+        <div class="icon" id="icon">💳</div>
+        <h2 id="title">Opening Payment App...</h2>
+        <div class="amount" id="amountDisplay">₹100</div>
+        
+        <div class="info" id="info">
+            If the app opened, complete your payment there.<br>
+            Then come back and click the button below.
+        </div>
+
+        <button class="btn btn-green" id="doneBtn" onclick="goBack()">
+            ✅ I've Completed Payment
+        </button>
+        
+        <button class="btn btn-blue" id="retryBtn" onclick="openApp()">
+            🔄 Open Payment App Again
+        </button>
+        
+        <button class="btn btn-outline" onclick="goBack()">
+            ← Cancel & Go Back
+        </button>
+    </div>
+
 <script>
-    // Get all params - they get split because & is not encoded
-    const params = new URLSearchParams(window.location.search);
-    const baseUrl = params.get("url");
+    var upiUrl = null;
     
-    if (baseUrl) {
-        // Reconstruct full UPI URL from split params
-        let fullUrl = baseUrl;
-        const pn = params.get("pn");
-        const am = params.get("am");
-        const cu = params.get("cu");
-        const tn = params.get("tn");
-        
-        if (pn) fullUrl += "&pn=" + pn;
-        if (am) fullUrl += "&am=" + am;
-        if (cu) fullUrl += "&cu=" + cu;
-        if (tn) fullUrl += "&tn=" + tn;
-        
-        window.location.href = fullUrl;
-    } else {
-        document.body.innerHTML = "Invalid payment link.";
+    function goBack() {
+        // Go back to main page
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+        } else {
+            window.location.href = '/';
+        }
     }
+    
+    function openApp() {
+        if (!upiUrl) return;
+        
+        // Method 1: Create hidden iframe (doesn't navigate away)
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'width:0;height:0;border:none;position:absolute;';
+        iframe.src = upiUrl;
+        document.body.appendChild(iframe);
+        
+        // Method 2: Also try direct open after delay as fallback
+        setTimeout(function() {
+            var link = document.createElement('a');
+            link.href = upiUrl;
+            link.click();
+        }, 500);
+    }
+    
+    // Parse URL params and build UPI URL
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var baseUrl = params.get("url");
+        
+        if (!baseUrl) {
+            document.getElementById('icon').textContent = '⚠️';
+            document.getElementById('title').textContent = 'Invalid Link';
+            document.getElementById('title').style.color = '#f44336';
+            document.getElementById('amountDisplay').classList.add('hidden');
+            document.getElementById('info').textContent = 'Payment link is invalid or expired.';
+            document.getElementById('doneBtn').classList.add('hidden');
+            document.getElementById('retryBtn').classList.add('hidden');
+            return;
+        }
+        
+        // Reconstruct full UPI URL
+        upiUrl = baseUrl;
+        var pn = params.get("pn");
+        var am = params.get("am");
+        var cu = params.get("cu");
+        
+        if (pn) upiUrl += "&pn=" + pn;
+        if (am) upiUrl += "&am=" + am;
+        if (cu) upiUrl += "&cu=" + cu;
+        
+        // Show amount
+        if (am) {
+            document.getElementById('amountDisplay').textContent = '₹' + am;
+        }
+        
+        // Auto-open app using iframe method
+        setTimeout(openApp, 200);
+    })();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+

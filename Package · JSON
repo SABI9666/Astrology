@@ -8,12 +8,16 @@
     "build": "echo 'No build required'",
     "start": "vercel dev"
   },
+  "dependencies": {
+    "pdfkit": "^0.14.0"
+  },
   "keywords": [
     "astrology",
     "zodiac",
     "openai",
     "vercel",
-    "whatsapp"
+    "whatsapp",
+    "pdf"
   ],
   "license": "MIT",
   "engines": {

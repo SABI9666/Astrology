@@ -1,4 +1,4 @@
-// Payment API - sends to test page
+// Payment API - Copy-paste UPI flow
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,15 +25,8 @@ export default function handler(req, res) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // All buttons go to same test page
-    const testUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + '&am=' + amount;
-
-    const urls = {
-        upi: testUrl,
-        gpay: testUrl,
-        phonepe: testUrl,
-        paytm: testUrl
-    };
+    // All buttons go to the copy-paste page
+    const payUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + '&am=' + amount;
 
     return res.status(200).json({
         success: true,
@@ -41,7 +34,12 @@ export default function handler(req, res) {
             amount: amount,
             upiId: upiId,
             upiName: upiName,
-            urls: urls
+            urls: {
+                upi: payUrl,
+                gpay: payUrl,
+                phonepe: payUrl,
+                paytm: payUrl
+            }
         }
     });
 }

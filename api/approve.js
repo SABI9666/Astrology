@@ -1,14 +1,8 @@
-// Admin Approval API - Decodes URL data and generates reading on approval
+// Admin Approval API - Password protected with PDF generation
 const crypto = require('crypto');
 
-// Secret for signing
-function getSecret() {
-    return process.env.ADMIN_SECRET || 'celestial2024';
-}
-
 // Verify signature
-function verifySignature(data, signature) {
-    const secret = getSecret();
+function verifySignature(data, signature, secret) {
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(JSON.stringify(data));
     const expectedSig = hmac.digest('hex').substring(0, 16);
@@ -91,18 +85,28 @@ async function generateReading(userData) {
         punjabi: 'Respond in Punjabi (ਪੰਜਾਬੀ ਵਿੱਚ).'
     };
 
-    const prompt = `You are an expert Vedic astrologer. Provide a detailed reading.
+    const prompt = `You are an expert Vedic astrologer. Provide a detailed personalized reading.
 
 **Person:** ${userData.n} (${userData.g})
 **Birth:** ${userData.bd} at ${userData.bt}, ${userData.bp}
 **Sign:** ${zodiac.name} (${zodiac.symbol}) - ${zodiac.element}
-**Life Path:** ${lifePath}
+**Life Path Number:** ${lifePath}
 
-**Questions:** ${userData.q}
+**Questions/Focus Areas:** ${userData.q}
 
 ${langPrompts[userData.l] || langPrompts.english}
 
-Give specific predictions with timeframes. Use **Section Title** format.`;
+Provide detailed predictions covering:
+1. Personality traits based on zodiac and life path
+2. Career and professional life
+3. Relationships and love life
+4. Health and wellness
+5. Financial prospects
+6. Specific answers to their questions
+7. Lucky numbers, colors, and days
+8. Recommendations and remedies
+
+Use **Section Title** format for headings. Be specific with timeframes where possible.`;
 
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -114,10 +118,10 @@ Give specific predictions with timeframes. Use **Section Title** format.`;
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
-                    { role: 'system', content: 'You are an expert Vedic astrologer.' },
+                    { role: 'system', content: 'You are an expert Vedic astrologer with deep knowledge of Jyotish.' },
                     { role: 'user', content: prompt }
                 ],
-                max_tokens: 2000,
+                max_tokens: 2500,
                 temperature: 0.8
             })
         });
@@ -135,9 +139,9 @@ Give specific predictions with timeframes. Use **Section Title** format.`;
     }
 }
 
-// Encode reading data for sharing
-function encodeReading(readingData) {
-    const json = JSON.stringify(readingData);
+// Encode reading for URL
+function encodeReading(data) {
+    const json = JSON.stringify(data);
     return Buffer.from(json).toString('base64')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
@@ -149,63 +153,91 @@ export default async function handler(req, res) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'no-store');
 
-    const { d, s, action } = req.query;
+    const { d, sig, password, action } = req.query;
+    const secret = process.env.ADMIN_SECRET || 'celestial2024';
 
-    // Check for encoded data
-    if (!d || !s) {
-        return res.status(400).send(errorPage('Missing Data', 'Invalid approval link. Please request a new one.'));
+    // Check for data
+    if (!d || !sig) {
+        return res.status(400).send(errorPage('Invalid Link', 'This approval link is invalid or incomplete.'));
     }
 
-    // Decode data
+    // Decode user data
     const userData = decodeData(d);
     if (!userData) {
         return res.status(400).send(errorPage('Invalid Data', 'Could not decode verification data.'));
     }
 
-    // Verify signature
-    if (!verifySignature(userData, s)) {
-        return res.status(403).send(errorPage('Invalid Signature', 'This link has been tampered with or is invalid.'));
+    // Verify data integrity
+    if (!verifySignature(userData, sig, secret)) {
+        return res.status(403).send(errorPage('Tampered Link', 'This link has been modified and is invalid.'));
     }
 
-    // Check if expired (24 hours)
+    // Check expiry (24 hours)
     const age = Date.now() - userData.t;
     if (age > 24 * 60 * 60 * 1000) {
-        return res.status(410).send(errorPage('Expired', 'This verification link has expired. Please request a new one.'));
+        return res.status(410).send(errorPage('Link Expired', 'This verification link has expired (24 hours).'));
     }
 
-    // Handle APPROVE action
+    const ageMinutes = Math.round(age / 60000);
+
+    // STEP 1: If no password provided, show password form
+    if (!password) {
+        return res.status(200).send(passwordPage(d, sig, userData, ageMinutes));
+    }
+
+    // STEP 2: Verify password
+    if (password !== secret) {
+        return res.status(200).send(passwordPage(d, sig, userData, ageMinutes, 'Incorrect password. Please try again.'));
+    }
+
+    // STEP 3: Password correct - handle actions
     if (action === 'approve') {
         // Generate reading
         const result = await generateReading(userData);
         
         if (!result || !result.reading) {
-            return res.status(500).send(errorPage('Generation Failed', 'Could not generate reading. Please try again.'));
+            return res.status(500).send(errorPage('Generation Failed', 'Could not generate reading. Check OpenAI API key.'));
         }
 
-        // Create reading data for sharing
+        // Create reading data
         const readingData = {
             name: userData.n,
             birthDate: userData.bd,
             birthTime: userData.bt,
             birthPlace: userData.bp,
+            language: userData.l,
             zodiac: result.zodiac,
             lifePathNumber: result.lifePath,
-            reading: result.reading
+            reading: result.reading,
+            generatedAt: new Date().toISOString()
         };
 
         const encodedReading = encodeReading(readingData);
         const host = req.headers.host;
         const protocol = host.includes('localhost') ? 'http' : 'https';
         const readingUrl = `${protocol}://${host}/api/reading?r=${encodedReading}`;
+        const pdfUrl = `${protocol}://${host}/api/reading?r=${encodedReading}&format=pdf`;
 
-        // Show success page with reading link
-        return res.status(200).send(`
+        return res.status(200).send(successPage(userData, readingUrl, pdfUrl));
+    }
+
+    if (action === 'reject') {
+        return res.status(200).send(rejectPage(userData));
+    }
+
+    // Default: Show approval page (after password verified)
+    return res.status(200).send(approvalPage(d, sig, password, userData, ageMinutes));
+}
+
+// Password entry page
+function passwordPage(d, sig, userData, ageMinutes, error = '') {
+    return `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✅ Approved!</title>
+    <title>🔐 Admin Login</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -220,149 +252,118 @@ export default async function handler(req, res) {
         }
         .card { 
             background: rgba(255,255,255,0.05); 
-            padding: 30px; 
-            border-radius: 20px; 
-            max-width: 450px;
-            width: 100%;
-            border: 2px solid #4CAF50;
-            text-align: center;
-        }
-        .icon { font-size: 4rem; margin-bottom: 15px; }
-        h1 { color: #4CAF50; margin-bottom: 10px; }
-        .details { 
-            background: rgba(0,0,0,0.3); 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin: 20px 0;
-            text-align: left;
-        }
-        .row { margin: 8px 0; }
-        .label { color: #D4AF37; font-size: 0.8em; }
-        .link-box {
-            background: rgba(76,175,80,0.1);
-            border: 1px solid rgba(76,175,80,0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .link-box p { margin-bottom: 10px; font-size: 0.9em; }
-        .link {
-            display: block;
-            padding: 15px;
-            background: linear-gradient(135deg, #4CAF50, #388E3C);
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            margin: 10px 0;
-        }
-        .copy-btn {
-            padding: 12px 20px;
-            background: #D4AF37;
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .whatsapp-btn {
-            display: block;
-            padding: 15px;
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <div class="icon">✅</div>
-        <h1>Payment Approved!</h1>
-        <p>Reading generated for:</p>
-        
-        <div class="details">
-            <div class="row"><span class="label">NAME:</span> ${userData.n}</div>
-            <div class="row"><span class="label">DOB:</span> ${userData.bd}</div>
-            <div class="row"><span class="label">TIME:</span> ${userData.bt}</div>
-            <div class="row"><span class="label">PLACE:</span> ${userData.bp}</div>
-        </div>
-
-        <div class="link-box">
-            <p>📱 Share this link with the customer:</p>
-            <a href="${readingUrl}" class="link" target="_blank">📖 View Reading</a>
-            <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
-            <a href="https://wa.me/${userData.n ? '' : ''}?text=${encodeURIComponent('🔮 Your Celestial Oracle Reading is ready!\n\nClick here to view:\n' + readingUrl)}" class="whatsapp-btn" target="_blank">
-                📱 Send via WhatsApp
-            </a>
-        </div>
-    </div>
-    <script>
-        const readingUrl = "${readingUrl}";
-        function copyLink() {
-            navigator.clipboard.writeText(readingUrl).then(() => {
-                document.querySelector('.copy-btn').textContent = '✓ Copied!';
-                setTimeout(() => {
-                    document.querySelector('.copy-btn').textContent = '📋 Copy Link';
-                }, 2000);
-            });
-        }
-    </script>
-</body>
-</html>
-        `);
-    }
-
-    // Handle REJECT action
-    if (action === 'reject') {
-        return res.status(200).send(`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>❌ Rejected</title>
-    <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: linear-gradient(135deg, #1a0a2e, #0d0618); 
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .card { 
-            background: rgba(255,255,255,0.05); 
-            padding: 30px; 
+            padding: 35px; 
             border-radius: 20px; 
             max-width: 400px;
-            border: 2px solid #f44336;
-            text-align: center;
+            width: 100%;
+            border: 1px solid rgba(212,175,55,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        .icon { font-size: 4rem; margin-bottom: 15px; }
-        h1 { color: #f44336; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .icon { font-size: 3.5rem; margin-bottom: 10px; }
+        h1 { color: #D4AF37; font-size: 1.4rem; }
+        .user-info {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        .user-info strong { color: #D4AF37; }
+        .time-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,152,0,0.2);
+            border-radius: 15px;
+            font-size: 0.75rem;
+            color: #ffb74d;
+            margin-top: 10px;
+        }
+        .form-group { margin: 20px 0; }
+        .form-label { 
+            display: block; 
+            color: #D4AF37; 
+            font-size: 0.8rem; 
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 0.2em;
+        }
+        .form-input:focus { outline: none; border-color: #D4AF37; }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #D4AF37, #c9a227);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .error {
+            background: rgba(244,67,54,0.2);
+            border: 1px solid rgba(244,67,54,0.5);
+            color: #ff8a80;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="icon">❌</div>
-        <h1>Payment Rejected</h1>
-        <p>Verification for <strong>${userData.n}</strong> has been rejected.</p>
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>Admin Verification</h1>
+        </div>
+
+        ${error ? `<div class="error">⚠️ ${error}</div>` : ''}
+
+        <div class="user-info">
+            <strong>Request from:</strong> ${userData.n}<br>
+            <strong>DOB:</strong> ${userData.bd} at ${userData.bt}<br>
+            <strong>Place:</strong> ${userData.bp}
+            <div class="time-badge">⏰ ${ageMinutes} minutes ago</div>
+        </div>
+
+        <form method="GET" action="">
+            <input type="hidden" name="d" value="${d}">
+            <input type="hidden" name="sig" value="${sig}">
+            
+            <div class="form-group">
+                <label class="form-label">Enter Admin Password</label>
+                <input type="password" name="password" class="form-input" placeholder="••••••••" required autofocus>
+            </div>
+            
+            <button type="submit" class="btn">🔓 Verify & Continue</button>
+        </form>
     </div>
 </body>
 </html>
-        `);
-    }
+    `;
+}
 
-    // Default: Show approval page
-    const approveUrl = `?d=${d}&s=${s}&action=approve`;
-    const rejectUrl = `?d=${d}&s=${s}&action=reject`;
+// Approval page (after password verified)
+function approvalPage(d, sig, password, userData, ageMinutes) {
+    const approveUrl = `?d=${d}&sig=${sig}&password=${encodeURIComponent(password)}&action=approve`;
+    const rejectUrl = `?d=${d}&sig=${sig}&password=${encodeURIComponent(password)}&action=reject`;
 
-    return res.status(200).send(`
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -385,14 +386,24 @@ export default async function handler(req, res) {
             background: rgba(255,255,255,0.05); 
             padding: 30px; 
             border-radius: 20px; 
-            max-width: 420px;
+            max-width: 450px;
             width: 100%;
             border: 1px solid rgba(212,175,55,0.3);
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-        .header { text-align: center; margin-bottom: 25px; }
-        .icon { font-size: 3.5rem; margin-bottom: 10px; }
-        h1 { color: #D4AF37; font-size: 1.5rem; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .icon { font-size: 3rem; margin-bottom: 10px; }
+        h1 { color: #D4AF37; font-size: 1.3rem; }
+        .verified-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(76,175,80,0.2);
+            border: 1px solid rgba(76,175,80,0.5);
+            border-radius: 20px;
+            color: #81c784;
+            font-size: 0.75rem;
+            margin-top: 10px;
+        }
         .details { 
             background: rgba(0,0,0,0.3); 
             padding: 20px; 
@@ -430,26 +441,19 @@ export default async function handler(req, res) {
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            transition: transform 0.2s, opacity 0.2s;
         }
-        .btn:active { transform: scale(0.98); }
-        .btn-approve { 
-            background: linear-gradient(135deg, #4CAF50, #388E3C); 
-            color: #fff; 
-        }
-        .btn-reject { 
-            background: linear-gradient(135deg, #f44336, #d32f2f); 
-            color: #fff; 
-        }
-        .time-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            background: rgba(255,152,0,0.2);
-            border: 1px solid rgba(255,152,0,0.4);
-            border-radius: 20px;
-            font-size: 0.75rem;
+        .btn-approve { background: linear-gradient(135deg, #4CAF50, #388E3C); color: #fff; }
+        .btn-reject { background: linear-gradient(135deg, #f44336, #d32f2f); color: #fff; }
+        .btn:hover { opacity: 0.9; }
+        .warning {
+            background: rgba(255,152,0,0.1);
+            border: 1px solid rgba(255,152,0,0.3);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
             color: #ffb74d;
-            margin-top: 10px;
+            margin-top: 15px;
+            text-align: center;
         }
     </style>
 </head>
@@ -458,7 +462,7 @@ export default async function handler(req, res) {
         <div class="header">
             <div class="icon">🔮</div>
             <h1>Payment Verification</h1>
-            <span class="time-badge">⏰ Created ${Math.round(age / 60000)} mins ago</span>
+            <div class="verified-badge">✓ Admin Verified</div>
         </div>
 
         <div class="details">
@@ -488,6 +492,10 @@ export default async function handler(req, res) {
             </div>
         </div>
 
+        <div class="warning">
+            ⚠️ Clicking APPROVE will generate the reading using AI credits
+        </div>
+
         <div class="buttons">
             <a href="${approveUrl}" class="btn btn-approve">✓ APPROVE</a>
             <a href="${rejectUrl}" class="btn btn-reject">✕ REJECT</a>
@@ -495,9 +503,191 @@ export default async function handler(req, res) {
     </div>
 </body>
 </html>
-    `);
+    `;
 }
 
+// Success page with reading link and PDF
+function successPage(userData, readingUrl, pdfUrl) {
+    const whatsappMsg = `🔮 *Your Celestial Oracle Reading is Ready!*
+
+Hi ${userData.n},
+
+Your personalized Vedic astrology reading has been generated.
+
+📖 *View Online:*
+${readingUrl}
+
+📄 *Download PDF:*
+${pdfUrl}
+
+Thank you for choosing Celestial Oracle! ✨`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMsg)}`;
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Approved!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #1a0a2e, #0d0618); 
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card { 
+            background: rgba(255,255,255,0.05); 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 480px;
+            width: 100%;
+            border: 2px solid #4CAF50;
+            text-align: center;
+        }
+        .icon { font-size: 4rem; margin-bottom: 15px; }
+        h1 { color: #4CAF50; margin-bottom: 10px; }
+        .user-name { color: #D4AF37; font-size: 1.2rem; margin: 10px 0; }
+        .links-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .link-group { margin: 15px 0; }
+        .link-label { font-size: 0.8rem; color: #aaa; margin-bottom: 8px; }
+        .link-btn {
+            display: block;
+            padding: 14px 20px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+        .link-online { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+        .link-pdf { background: linear-gradient(135deg, #2196F3, #1976D2); }
+        .link-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); }
+        .link-btn:hover { opacity: 0.9; }
+        .copy-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+        .copy-label { font-size: 0.75rem; color: #D4AF37; margin-bottom: 5px; }
+        .copy-url {
+            font-family: monospace;
+            font-size: 0.7rem;
+            word-break: break-all;
+            color: #aaa;
+            max-height: 60px;
+            overflow: hidden;
+        }
+        .copy-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #D4AF37;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">✅</div>
+        <h1>Payment Approved!</h1>
+        <div class="user-name">Reading generated for: ${userData.n}</div>
+
+        <div class="links-box">
+            <div class="link-group">
+                <div class="link-label">📖 Share Reading Link:</div>
+                <a href="${readingUrl}" class="link-btn link-online" target="_blank">View Online Reading</a>
+                <a href="${pdfUrl}" class="link-btn link-pdf" target="_blank">📄 Download PDF Report</a>
+            </div>
+            
+            <div class="link-group">
+                <div class="link-label">📱 Send to Customer:</div>
+                <a href="${whatsappUrl}" class="link-btn link-whatsapp" target="_blank">Send via WhatsApp</a>
+            </div>
+        </div>
+
+        <div class="copy-box">
+            <div class="copy-label">Reading URL:</div>
+            <div class="copy-url" id="readingUrl">${readingUrl}</div>
+            <button class="copy-btn" onclick="copyUrl()">📋 Copy Link</button>
+        </div>
+    </div>
+    <script>
+        function copyUrl() {
+            navigator.clipboard.writeText('${readingUrl}').then(() => {
+                document.querySelector('.copy-btn').textContent = '✓ Copied!';
+                setTimeout(() => {
+                    document.querySelector('.copy-btn').textContent = '📋 Copy Link';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
+    `;
+}
+
+// Reject page
+function rejectPage(userData) {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❌ Rejected</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: linear-gradient(135deg, #1a0a2e, #0d0618); 
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card { 
+            background: rgba(255,255,255,0.05); 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 400px;
+            border: 2px solid #f44336;
+            text-align: center;
+        }
+        .icon { font-size: 4rem; margin-bottom: 15px; }
+        h1 { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">❌</div>
+        <h1>Payment Rejected</h1>
+        <p style="margin-top: 15px;">Verification for <strong>${userData.n}</strong> has been rejected.</p>
+    </div>
+</body>
+</html>
+    `;
+}
+
+// Error page
 function errorPage(title, message) {
     return `
 <!DOCTYPE html>

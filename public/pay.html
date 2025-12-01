@@ -3,180 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Payment Test</title>
+<title>Complete Payment</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        background: #1a0a2e;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #1a0a2e, #0d0618);
         color: #fff;
         min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         padding: 20px;
     }
     .card {
         background: rgba(255,255,255,0.05);
-        padding: 20px;
-        border-radius: 15px;
-        max-width: 500px;
-        margin: 0 auto 20px;
+        padding: 30px 25px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
         border: 1px solid rgba(212,175,55,0.3);
     }
-    h2 { color: #D4AF37; margin-bottom: 15px; font-size: 1.1rem; }
-    h3 { color: #4CAF50; margin: 15px 0 10px; font-size: 0.9rem; }
-    .amount { font-size: 2rem; color: #4CAF50; text-align: center; margin: 10px 0; }
-    .upi-id { 
-        background: #000; 
-        padding: 10px; 
-        border-radius: 8px; 
-        font-family: monospace; 
-        color: #D4AF37;
-        margin: 10px 0;
-        word-break: break-all;
-        font-size: 0.9rem;
+    .icon { font-size: 3.5rem; margin-bottom: 10px; }
+    h2 { color: #D4AF37; margin-bottom: 5px; font-size: 1.3rem; }
+    .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; }
+    .amount-box {
+        background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1));
+        border: 2px solid #4CAF50;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
     }
+    .amount-label { font-size: 0.8rem; color: #a5d6a7; margin-bottom: 5px; }
+    .amount { font-size: 2.8rem; font-weight: 700; color: #4CAF50; }
+    .upi-box {
+        background: rgba(0,0,0,0.4);
+        border: 2px dashed #D4AF37;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 20px 0;
+        cursor: pointer;
+    }
+    .upi-label { font-size: 0.75rem; color: #888; margin-bottom: 8px; }
+    .upi-id {
+        font-family: monospace;
+        font-size: 1.2rem;
+        color: #D4AF37;
+        word-break: break-all;
+        padding: 10px;
+        background: rgba(212,175,55,0.1);
+        border-radius: 8px;
+    }
+    .copied-badge {
+        display: inline-block;
+        background: #4CAF50;
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    .steps {
+        background: rgba(255,255,255,0.03);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+    .steps-title {
+        color: #D4AF37;
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    .step { display: flex; gap: 12px; margin: 12px 0; align-items: flex-start; }
+    .step-num {
+        width: 28px; height: 28px;
+        background: #D4AF37;
+        color: #000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    .step-text { font-size: 0.9rem; color: #ddd; line-height: 1.4; padding-top: 3px; }
+    .step-text strong { color: #4CAF50; }
     .btn {
         display: block;
         width: 100%;
-        padding: 14px;
-        border-radius: 10px;
+        padding: 16px 20px;
+        border-radius: 12px;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 1rem;
+        cursor: pointer;
         text-decoration: none;
         text-align: center;
-        margin: 8px 0;
-        border: none;
-        color: #fff;
-    }
-    .btn-1 { background: #4285F4; }
-    .btn-2 { background: #34A853; }
-    .btn-3 { background: #EA4335; }
-    .btn-4 { background: #FBBC05; color: #000; }
-    .btn-5 { background: #5f259f; }
-    .btn-6 { background: #ff9800; }
-    .url-box {
-        background: rgba(0,0,0,0.5);
-        padding: 8px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.65rem;
-        color: #888;
-        word-break: break-all;
-        margin-top: 5px;
-    }
-    .note { 
-        font-size: 0.8rem; 
-        color: #aaa; 
         margin: 10px 0;
-        padding: 10px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 8px;
+        border: none;
     }
-    .success { background: rgba(76,175,80,0.2); border: 1px solid #4CAF50; }
-    .home-btn {
-        display: block;
-        text-align: center;
+    .btn-copy { background: linear-gradient(135deg, #D4AF37, #c9a227); color: #000; }
+    .btn-green { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(212,175,55,0.5);
         color: #D4AF37;
-        margin-top: 20px;
-        text-decoration: none;
+        font-size: 0.9rem;
     }
+    .btn:active { transform: scale(0.98); }
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        color: #555;
+        font-size: 0.75rem;
+    }
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(212,175,55,0.2);
+    }
+    .divider span { padding: 0 15px; }
 </style>
 </head>
 <body>
-    <div class="card">
-        <h2>🔧 UPI Payment Test</h2>
-        <p style="font-size:0.85rem;color:#aaa;margin-bottom:15px;">
-            Test which URL format works with your GPay. Try each button one by one.
-        </p>
-        <div class="amount" id="amt">₹100</div>
-        <div class="upi-id" id="upiDisplay">Loading...</div>
+    <div class="card" id="card">
+        <div class="icon">💳</div>
+        <h2>Complete Your Payment</h2>
+        <p class="subtitle">UPI ID copied! Now paste in your app</p>
+        
+        <div class="amount-box">
+            <div class="amount-label">AMOUNT TO PAY</div>
+            <div class="amount" id="amtDisplay">₹100</div>
+        </div>
+        
+        <div class="upi-box" id="upiBox">
+            <div class="upi-label">TAP TO COPY UPI ID</div>
+            <div class="upi-id" id="upiDisplay">loading...</div>
+            <div class="copied-badge" id="copiedBadge">✓ Copied!</div>
+        </div>
+        
+        <button class="btn btn-copy" id="copyBtn">📋 Copy UPI ID Again</button>
+        
+        <div class="steps">
+            <div class="steps-title">📝 How to Pay</div>
+            <div class="step">
+                <span class="step-num">1</span>
+                <span class="step-text">Open <strong>GPay / PhonePe / Paytm</strong></span>
+            </div>
+            <div class="step">
+                <span class="step-num">2</span>
+                <span class="step-text">Tap <strong>"New Payment"</strong> or <strong>"Pay UPI ID"</strong></span>
+            </div>
+            <div class="step">
+                <span class="step-num">3</span>
+                <span class="step-text"><strong>Long press → Paste</strong> the UPI ID</span>
+            </div>
+            <div class="step">
+                <span class="step-num">4</span>
+                <span class="step-text">Enter amount: <strong id="amtText">₹100</strong> and pay</span>
+            </div>
+        </div>
+        
+        <div class="divider"><span>after payment completed</span></div>
+        
+        <a href="/?verify=1" class="btn btn-green">✅ I Have Paid → Verify on WhatsApp</a>
+        <a href="/" class="btn btn-outline">← Cancel</a>
     </div>
-
-    <div class="card">
-        <h3>Format 1: Standard UPI (Recommended)</h3>
-        <a href="#" id="btn1" class="btn btn-1">Try Format 1</a>
-        <div class="url-box" id="url1"></div>
-    </div>
-
-    <div class="card">
-        <h3>Format 2: Without cu=INR</h3>
-        <a href="#" id="btn2" class="btn btn-2">Try Format 2</a>
-        <div class="url-box" id="url2"></div>
-    </div>
-
-    <div class="card">
-        <h3>Format 3: With Encoded UPI ID</h3>
-        <a href="#" id="btn3" class="btn btn-3">Try Format 3</a>
-        <div class="url-box" id="url3"></div>
-    </div>
-
-    <div class="card">
-        <h3>Format 4: GPay Specific (tez://)</h3>
-        <a href="#" id="btn4" class="btn btn-4">Try Format 4</a>
-        <div class="url-box" id="url4"></div>
-    </div>
-
-    <div class="card">
-        <h3>Format 5: With tr (transaction ref)</h3>
-        <a href="#" id="btn5" class="btn btn-5">Try Format 5</a>
-        <div class="url-box" id="url5"></div>
-    </div>
-
-    <div class="card">
-        <h3>Format 6: Minimal (only pa & am)</h3>
-        <a href="#" id="btn6" class="btn btn-6">Try Format 6</a>
-        <div class="url-box" id="url6"></div>
-    </div>
-
-    <div class="card success">
-        <h3>✅ After Testing</h3>
-        <p class="note">
-            Tell me which format number worked (1-6), and I'll update the code to use that format.
-        </p>
-    </div>
-
-    <a href="/" class="home-btn">← Back to Home</a>
 
 <script>
 (function() {
     var params = new URLSearchParams(window.location.search);
-    var pa = params.get("pa") || "test@upi";
+    var pa = params.get("pa");
     var am = params.get("am") || "100";
     
+    if (!pa) {
+        document.getElementById('card').innerHTML = '<div class="icon">⚠️</div><h2 style="color:#f44336">Invalid Link</h2><p style="color:#aaa;margin:15px 0;">Payment details not found</p><a href="/" class="btn btn-outline">← Go Home</a>';
+        return;
+    }
+    
+    // Display values
     document.getElementById('upiDisplay').textContent = pa;
-    document.getElementById('amt').textContent = '₹' + am;
+    document.getElementById('amtDisplay').textContent = '₹' + am;
+    document.getElementById('amtText').textContent = '₹' + am;
     
-    var paEncoded = encodeURIComponent(pa);
-    var txnId = 'TXN' + Date.now();
+    // Copy function
+    function copyUPI() {
+        navigator.clipboard.writeText(pa).then(function() {
+            document.getElementById('copiedBadge').textContent = '✓ Copied!';
+            document.getElementById('copiedBadge').style.background = '#4CAF50';
+            document.getElementById('copyBtn').innerHTML = '✓ Copied! Tap to Copy Again';
+            setTimeout(function() {
+                document.getElementById('copyBtn').innerHTML = '📋 Copy UPI ID Again';
+            }, 2000);
+        }).catch(function() {
+            // Fallback for older browsers
+            var ta = document.createElement('textarea');
+            ta.value = pa;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            document.getElementById('copiedBadge').textContent = '✓ Copied!';
+        });
+    }
     
-    // Format 1: Standard
-    var url1 = 'upi://pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    document.getElementById('btn1').href = url1;
-    document.getElementById('url1').textContent = url1;
+    // Auto-copy on page load
+    setTimeout(copyUPI, 300);
     
-    // Format 2: Without currency
-    var url2 = 'upi://pay?pa=' + pa + '&am=' + am;
-    document.getElementById('btn2').href = url2;
-    document.getElementById('url2').textContent = url2;
+    // Copy on button click
+    document.getElementById('copyBtn').onclick = copyUPI;
     
-    // Format 3: Encoded UPI ID
-    var url3 = 'upi://pay?pa=' + paEncoded + '&am=' + am + '&cu=INR';
-    document.getElementById('btn3').href = url3;
-    document.getElementById('url3').textContent = url3;
-    
-    // Format 4: tez:// scheme
-    var url4 = 'tez://upi/pay?pa=' + pa + '&am=' + am + '&cu=INR';
-    document.getElementById('btn4').href = url4;
-    document.getElementById('url4').textContent = url4;
-    
-    // Format 5: With transaction ref
-    var url5 = 'upi://pay?pa=' + pa + '&am=' + am + '&cu=INR&tr=' + txnId;
-    document.getElementById('btn5').href = url5;
-    document.getElementById('url5').textContent = url5;
-    
-    // Format 6: Minimal
-    var url6 = 'upi://pay?pa=' + pa + '&am=' + am;
-    document.getElementById('btn6').href = url6;
-    document.getElementById('url6').textContent = url6;
+    // Copy on UPI box click
+    document.getElementById('upiBox').onclick = copyUPI;
 })();
 </script>
 </body>

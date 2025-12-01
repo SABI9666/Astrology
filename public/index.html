@@ -253,6 +253,58 @@
             font-size: 0.95rem;
             cursor: pointer;
         }
+
+        /* UPI Buttons */
+        .upi-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .upi-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .upi-btn:active { transform: scale(0.97); opacity: 0.9; }
+        .upi-btn-icon { font-size: 1.2rem; }
+        .upi-btn.gpay { background: linear-gradient(135deg, #4285F4, #34A853); }
+        .upi-btn.phonepe { background: linear-gradient(135deg, #5f259f, #8b5cf6); }
+        .upi-btn.paytm { background: linear-gradient(135deg, #00BAF2, #0078D4); }
+        .upi-btn.allupi { background: linear-gradient(135deg, #ff9800, #e65100); }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            color: var(--gold-light);
+            opacity: 0.5;
+            font-size: 0.75rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(212,175,55,0.3);
+        }
+        .divider span { padding: 0 12px; }
+
+        .manual-steps {
+            font-size: 0.8rem;
+            color: var(--gold-light);
+            opacity: 0.7;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
         .steps {
             text-align: left;
             background: rgba(76,175,80,0.1);
@@ -408,23 +460,40 @@
             <h2 class="modal-title">Complete Payment</h2>
             <div class="amount" id="amount">₹100</div>
 
+            <!-- UPI App Buttons -->
+            <div class="upi-buttons">
+                <button class="upi-btn gpay" id="gpayBtn">
+                    <span class="upi-btn-icon">📱</span>
+                    <span>Pay with Google Pay</span>
+                </button>
+                <a href="#" class="upi-btn phonepe" id="phonepeBtn">
+                    <span class="upi-btn-icon">💜</span>
+                    <span>Pay with PhonePe</span>
+                </a>
+                <a href="#" class="upi-btn paytm" id="paytmBtn">
+                    <span class="upi-btn-icon">💙</span>
+                    <span>Pay with Paytm</span>
+                </a>
+                <a href="#" class="upi-btn allupi" id="allUpiBtn">
+                    <span class="upi-btn-icon">🏦</span>
+                    <span>Other UPI Apps</span>
+                </a>
+            </div>
+
+            <div class="divider"><span>or pay manually</span></div>
+
             <div class="upi-box">
-                <div class="upi-label">Pay to UPI ID:</div>
+                <div class="upi-label">UPI ID:</div>
                 <div class="upi-id" id="upiId">Loading...</div>
                 <button class="copy-btn" id="copyBtn">📋 Copy UPI ID</button>
             </div>
 
-            <div class="steps">
-                <div class="steps-title">📱 How to Pay:</div>
-                1. Copy the UPI ID above<br>
-                2. Open GPay / PhonePe / Paytm<br>
-                3. Go to "Pay to UPI ID"<br>
-                4. Paste UPI ID & enter ₹<span id="amountText">100</span><br>
-                5. Complete payment & return here
-            </div>
+            <p class="manual-steps">
+                Open any UPI app → Pay to UPI ID → Enter ₹<span id="amountText">100</span> → Complete payment
+            </p>
 
             <div class="warning">
-                ⚠️ Reading will only unlock after successful payment verification
+                ⚠️ Click verify only after payment is complete
             </div>
 
             <button class="verify-btn" id="verifyBtn">✓ I Have Paid - Verify Now</button>
@@ -535,6 +604,7 @@
         let selectedTags = [];
         let userData = null;
         let paymentToken = null;
+        let gpayUrls = []; // Store all GPay URL formats
 
         const questionMap = {
             marriage: "Marriage predictions - when will I marry, partner details",
@@ -576,6 +646,76 @@
                 }
             };
         });
+
+        // Handle UPI button clicks with fallback
+        document.querySelectorAll('.upi-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                const href = this.href;
+                if (!href || href === '#') {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Try to open the app
+                const startTime = Date.now();
+                
+                // If app doesn't open within 1.5 seconds, show toast
+                setTimeout(() => {
+                    if (Date.now() - startTime < 2000) {
+                        showToast('Opening payment app...');
+                    }
+                }, 100);
+            };
+        });
+
+        // GPay button - try multiple URLs
+        document.getElementById('gpayBtn').onclick = function(e) {
+            e.preventDefault();
+            
+            if (gpayUrls.length === 0) {
+                showToast('Payment not ready. Please wait.');
+                return;
+            }
+
+            showToast('Opening Google Pay...');
+            
+            // Try each GPay URL format
+            let urlIndex = 0;
+            
+            function tryNextUrl() {
+                if (urlIndex >= gpayUrls.length) {
+                    // All URLs failed, show manual option
+                    showToast('GPay not opening? Copy UPI ID and pay manually');
+                    return;
+                }
+                
+                const url = gpayUrls[urlIndex];
+                urlIndex++;
+                
+                // Create hidden iframe to try the URL
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                // Try to open URL
+                const startTime = Date.now();
+                
+                // Also try window.location for better compatibility
+                window.location.href = url;
+                
+                // Check if app opened after short delay
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    // If we're still here after 1.5s, app didn't open
+                    if (document.hasFocus() && Date.now() - startTime < 2000) {
+                        // Try next URL format
+                        tryNextUrl();
+                    }
+                }, 1500);
+            }
+            
+            tryNextUrl();
+        };
 
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -626,6 +766,15 @@
                 document.getElementById('amount').textContent = '₹' + data.data.amount;
                 document.getElementById('amountText').textContent = data.data.amount;
                 document.getElementById('upiId').textContent = data.data.upiId;
+                
+                // Store GPay URLs for fallback
+                const urls = data.data.urls;
+                gpayUrls = [urls.gpay1, urls.gpay2, urls.gpay3];
+                
+                // Set other UPI app buttons
+                document.getElementById('phonepeBtn').href = urls.phonepe;
+                document.getElementById('paytmBtn').href = urls.paytm;
+                document.getElementById('allUpiBtn').href = urls.upi;
 
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('paymentModal').classList.add('active');

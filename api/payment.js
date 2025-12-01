@@ -1,4 +1,4 @@
-// Payment API - Fixed UPI URLs (NOT encoded, as per working example)
+// Payment API - Minimal UPI params (fixes limit error)
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,40 +12,33 @@ export default function handler(req, res) {
     }
 
     const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'CelestialOracle';
+    const upiName = process.env.UPI_NAME || 'Payment';
     
-    // Amount as integer
+    // Amount - clean integer only
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = parseInt(rawAmount, 10).toString();
+    const amount = Math.floor(parseFloat(rawAmount)).toString();
 
     if (!upiId || !upiId.includes('@')) {
         return res.status(500).json({ success: false, message: 'Payment not configured' });
     }
-
-    // Clean name - encode spaces as %20
-    const cleanName = encodeURIComponent(upiName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 15));
 
     // Get host
     const host = req.headers.host;
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // Build URLs exactly like the working example:
-    // https://domain.com/pay.html?url=upi://pay?pa=UPI_ID&pn=NAME&am=AMOUNT&cu=INR
-    // NOT encoded!
+    // MINIMAL UPI URL - only essential params
+    // Format: upi://pay?pa=UPI_ID&am=AMOUNT&cu=INR
+    // Skip pn (payee name) as it can cause issues
     
+    const minimalParams = 'pa=' + upiId + '&am=' + amount + '&cu=INR';
+    
+    // All use same upi:// scheme (most compatible)
     const urls = {
-        // Generic UPI
-        upi: baseUrl + '/pay.html?url=upi://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR',
-        
-        // Google Pay (tez scheme)
-        gpay: baseUrl + '/pay.html?url=tez://upi/pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR',
-        
-        // PhonePe
-        phonepe: baseUrl + '/pay.html?url=phonepe://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR',
-        
-        // Paytm
-        paytm: baseUrl + '/pay.html?url=paytmmp://pay?pa=' + upiId + '&pn=' + cleanName + '&am=' + amount + '&cu=INR'
+        upi: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
+        gpay: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
+        phonepe: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount,
+        paytm: baseUrl + '/pay.html?pa=' + upiId + '&am=' + amount
     };
 
     return res.status(200).json({

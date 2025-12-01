@@ -4,459 +4,296 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0d0618">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Discover your cosmic destiny with personalized AI-powered astrology readings">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.openai.com;">
-    <title>Celestial Oracle | ज्योतिष Reading</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Celestial Oracle | ज्योतिष</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #D4AF37;
             --gold-light: #F4E4BC;
-            --deep-purple: #1a0a2e;
             --midnight: #0d0618;
-            --star-white: #f8f4ff;
-            --mystic-violet: #7b5ea7;
-            --success-green: #4CAF50;
+            --purple: #1a0a2e;
+            --violet: #7b5ea7;
+            --white: #f8f4ff;
+            --green: #4CAF50;
+            --red: #f44336;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { font-size: 16px; scroll-behavior: smooth; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Noto Sans', sans-serif;
             background: var(--midnight);
+            color: var(--white);
             min-height: 100vh;
-            color: var(--star-white);
-            overflow-x: hidden;
         }
-
-        .stars-container {
+        .stars {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none;
             z-index: 0;
         }
-
         .star {
             position: absolute;
             width: 2px; height: 2px;
             background: white;
             border-radius: 50%;
-            animation: twinkle var(--duration, 3s) ease-in-out infinite;
-            animation-delay: var(--delay, 0s);
+            animation: twinkle 3s ease-in-out infinite;
         }
-
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
-
-        .oracle-container {
+        .container {
             position: relative;
             z-index: 10;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            max-width: 550px;
+            margin: 0 auto;
             padding: 30px 16px;
         }
-
-        .oracle-header {
+        .header {
             text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 1s ease-out;
+            margin-bottom: 25px;
         }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .zodiac-wheel {
-            width: 70px; height: 70px;
-            margin: 0 auto 15px;
-            animation: rotate 60s linear infinite;
-        }
-
-        @keyframes rotate { to { transform: rotate(360deg); } }
-
-        .oracle-title {
+        .header h1 {
             font-family: 'Cinzel', serif;
-            font-size: 1.75rem;
-            letter-spacing: 0.15em;
             color: var(--gold);
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-            margin-bottom: 8px;
+            font-size: 1.7rem;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 20px rgba(212,175,55,0.5);
         }
-
-        .oracle-subtitle {
-            font-size: 1rem;
+        .header p {
             color: var(--gold-light);
             opacity: 0.8;
+            margin-top: 5px;
         }
-
-        .oracle-card {
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 6, 24, 0.98));
-            border: 1px solid rgba(212, 175, 55, 0.3);
+        .card {
+            background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,6,24,0.98));
+            border: 1px solid rgba(212,175,55,0.3);
             border-radius: 16px;
-            padding: 24px 20px;
-            max-width: 550px;
-            width: 100%;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
-            animation: fadeInUp 1s ease-out 0.3s both;
+            padding: 25px 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card-decoration {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .card-decoration svg {
-            width: 50px; height: 50px;
-            fill: var(--gold);
-            opacity: 0.6;
-        }
-
-        .form-group { margin-bottom: 18px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
+        .form-group { margin-bottom: 16px; }
         .form-label {
             display: block;
             font-family: 'Cinzel', serif;
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
+            font-size: 0.7rem;
             color: var(--gold);
             margin-bottom: 8px;
             text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
-
         .form-input, .form-select {
             width: 100%;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.25);
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.25);
             border-radius: 10px;
-            color: var(--star-white);
-            font-family: 'Noto Sans', sans-serif;
+            color: var(--white);
             font-size: 16px;
-            transition: all 0.3s ease;
         }
-
-        .form-select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23D4AF37' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 35px;
-            cursor: pointer;
-            -webkit-appearance: none;
-        }
-
-        .form-select option { background: var(--deep-purple); color: var(--star-white); }
-
+        .form-select { cursor: pointer; }
+        .form-select option { background: var(--purple); }
         .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.08);
         }
-
-        .form-input::placeholder { color: rgba(248, 244, 255, 0.35); }
-
-        input[type="date"], input[type="time"] { min-height: 48px; }
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8) sepia(1) saturate(5) hue-rotate(10deg);
-            cursor: pointer;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
-
-        .question-section { margin-top: 10px; }
-        .question-label {
-            display: block;
-            font-family: 'Cinzel', serif;
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
-            color: var(--gold);
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             margin-bottom: 12px;
-            text-transform: uppercase;
         }
-
-        .question-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-
-        .question-tag {
-            padding: 8px 14px;
-            background: rgba(123, 94, 167, 0.15);
-            border: 1px solid rgba(123, 94, 167, 0.3);
+        .tag {
+            padding: 8px 12px;
+            background: rgba(123,94,167,0.15);
+            border: 1px solid rgba(123,94,167,0.3);
             border-radius: 20px;
-            color: var(--mystic-violet);
+            color: var(--violet);
             font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
-
-        .question-tag:hover, .question-tag.active {
-            background: rgba(123, 94, 167, 0.3);
-            border-color: var(--mystic-violet);
-            color: var(--star-white);
+        .tag.active {
+            background: var(--violet);
+            color: white;
         }
-
-        .question-tag.active { background: var(--mystic-violet); }
-
-        .custom-question {
+        textarea {
             width: 100%;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.25);
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.25);
             border-radius: 10px;
-            color: var(--star-white);
-            font-family: 'Noto Sans', sans-serif;
+            color: var(--white);
             font-size: 15px;
+            min-height: 60px;
             resize: vertical;
-            min-height: 70px;
         }
-
-        .custom-question:focus {
-            outline: none;
-            border-color: var(--gold);
-        }
-
-        .custom-question::placeholder { color: rgba(248, 244, 255, 0.35); }
-
-        .oracle-button {
+        .btn {
             width: 100%;
-            padding: 16px 30px;
-            background: linear-gradient(135deg, var(--gold), #c9a227);
+            padding: 16px;
             border: none;
             border-radius: 10px;
             font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-            letter-spacing: 0.2em;
-            color: var(--midnight);
+            font-size: 0.95rem;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 15px;
-            min-height: 54px;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #c9a227);
+            color: var(--midnight);
             font-weight: 600;
         }
-
-        .oracle-button:active { transform: scale(0.98); }
-        .oracle-button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-green {
+            background: linear-gradient(135deg, var(--green), #388E3C);
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Loading */
-        .loading-overlay {
+        .loading {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(13, 6, 24, 0.97);
-            z-index: 1000;
+            background: rgba(13,6,24,0.97);
+            z-index: 100;
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
-
-        .loading-overlay.active { display: flex; }
-
-        .celestial-loader {
-            width: 80px; height: 80px;
-            position: relative;
-        }
-
-        .loader-ring {
-            position: absolute;
-            width: 100%; height: 100%;
-            border: 2px solid transparent;
+        .loading.active { display: flex; }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 3px solid rgba(212,175,55,0.2);
             border-top-color: var(--gold);
             border-radius: 50%;
-            animation: spin 1.5s linear infinite;
+            animation: spin 1s linear infinite;
         }
-
-        .loader-ring:nth-child(2) {
-            width: 70%; height: 70%;
-            top: 15%; left: 15%;
-            border-top-color: var(--mystic-violet);
-            animation-duration: 2s;
-            animation-direction: reverse;
-        }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-text {
-            margin-top: 25px;
-            font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
+        .loading p {
+            margin-top: 20px;
             color: var(--gold);
-            letter-spacing: 0.15em;
-        }
-
-        .loading-subtext {
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: var(--gold-light);
-            opacity: 0.7;
+            font-family: 'Cinzel', serif;
         }
 
         /* Payment Modal */
-        .payment-modal {
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(13, 6, 24, 0.98);
-            z-index: 1001;
+            background: rgba(13,6,24,0.98);
+            z-index: 200;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
-
-        .payment-modal.active { display: flex; }
-
-        .payment-card {
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.98), rgba(13, 6, 24, 0.99));
-            border: 1px solid rgba(212, 175, 55, 0.3);
+        .modal.active { display: flex; }
+        .modal-card {
+            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,6,24,0.99));
+            border: 1px solid rgba(212,175,55,0.3);
             border-radius: 20px;
             padding: 30px 25px;
             max-width: 380px;
             width: 100%;
             text-align: center;
         }
-
-        .payment-icon { font-size: 3rem; margin-bottom: 10px; }
-
-        .payment-title {
+        .modal-icon { font-size: 3rem; margin-bottom: 10px; }
+        .modal-title {
             font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
             color: var(--gold);
+            font-size: 1.2rem;
             margin-bottom: 5px;
         }
-
-        .payment-amount {
+        .amount {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--success-green);
+            color: var(--green);
             margin: 15px 0;
         }
-
-        .payment-desc {
-            color: var(--gold-light);
-            opacity: 0.8;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-        }
-
-        .upi-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-
-        .upi-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 20px;
+        .upi-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.3);
             border-radius: 12px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: transform 0.2s, opacity 0.2s;
+            padding: 20px;
+            margin: 20px 0;
         }
-
-        .upi-btn:active { transform: scale(0.98); }
-        .upi-btn.gpay { background: linear-gradient(135deg, #4285F4, #34A853); }
-        .upi-btn.phonepe { background: linear-gradient(135deg, #5f259f, #8b5cf6); }
-        .upi-btn.paytm { background: linear-gradient(135deg, #00BAF2, #0078D4); }
-        .upi-btn.all-upi { background: linear-gradient(135deg, #ff9800, #f57c00); }
-
-        .upi-divider {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            color: var(--gold-light);
-            opacity: 0.5;
+        .upi-label {
             font-size: 0.75rem;
-        }
-
-        .upi-divider::before, .upi-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(212, 175, 55, 0.3);
-        }
-
-        .upi-divider span { padding: 0 12px; }
-
-        .upi-id-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-
-        .upi-id-label {
-            font-size: 0.7rem;
             color: var(--gold-light);
             opacity: 0.7;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
-
-        .upi-id-value {
+        .upi-id {
             font-family: monospace;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--gold);
             word-break: break-all;
+            margin-bottom: 15px;
         }
-
         .copy-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, var(--gold), #c9a227);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--midnight);
-            font-family: 'Cinzel', serif;
-            font-size: 0.85rem;
             font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
         }
-
-        .copy-btn:active { transform: scale(0.98); }
-
-        .manual-hint {
-            font-size: 0.7rem;
-            color: var(--gold-light);
-            opacity: 0.6;
-            margin: 10px 0;
-            line-height: 1.4;
+        .steps {
+            text-align: left;
+            background: rgba(76,175,80,0.1);
+            border: 1px solid rgba(76,175,80,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.85rem;
+            line-height: 1.8;
         }
-
+        .steps-title {
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .warning {
+            background: rgba(244,67,54,0.1);
+            border: 1px solid rgba(244,67,54,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #ff9999;
+        }
         .verify-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, var(--success-green), #388E3C);
+            background: linear-gradient(135deg, var(--green), #388E3C);
             border: none;
             border-radius: 10px;
             color: white;
             font-family: 'Cinzel', serif;
-            font-size: 0.95rem;
+            font-size: 1rem;
             cursor: pointer;
             margin-top: 10px;
-            letter-spacing: 0.1em;
         }
-
-        .verify-btn:active { transform: scale(0.98); }
-
         .cancel-btn {
             width: 100%;
             padding: 12px;
             background: transparent;
-            border: 1px solid rgba(255, 100, 100, 0.4);
+            border: 1px solid rgba(255,100,100,0.4);
             border-radius: 10px;
             color: #ff9999;
             font-size: 0.85rem;
@@ -464,311 +301,148 @@
             margin-top: 10px;
         }
 
-        .payment-security {
-            font-size: 0.65rem;
-            color: var(--gold-light);
-            opacity: 0.4;
-            margin-top: 15px;
-        }
-
         /* Results */
-        .results-container {
-            display: none;
-            max-width: 800px;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .results-container.active { display: block; }
-
-        .results-card {
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 6, 24, 0.98));
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 16px;
-            padding: 30px 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
+        .results { display: none; }
+        .results.active { display: block; }
         .results-header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+            margin-bottom: 20px;
         }
-
-        .zodiac-symbol-result {
-            width: 90px; height: 90px;
-            margin: 0 auto 15px;
-        }
-
-        .zodiac-symbol-result svg { width: 100%; height: 100%; }
-
+        .zodiac-icon { font-size: 4rem; margin-bottom: 10px; }
         .sun-sign {
             font-family: 'Cinzel', serif;
             font-size: 1.8rem;
             color: var(--gold);
-            margin-bottom: 10px;
         }
-
-        .badges-container {
+        .badges {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
-
         .badge {
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 20px;
-            font-family: 'Cinzel', serif;
             font-size: 0.75rem;
         }
-
         .badge-gold {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            background: rgba(212,175,55,0.1);
+            border: 1px solid rgba(212,175,55,0.3);
             color: var(--gold);
         }
-
         .badge-violet {
-            background: rgba(123, 94, 167, 0.2);
-            border: 1px solid rgba(123, 94, 167, 0.4);
-            color: var(--mystic-violet);
+            background: rgba(123,94,167,0.2);
+            border: 1px solid rgba(123,94,167,0.4);
+            color: var(--violet);
         }
-
-        .birth-info {
-            color: var(--gold-light);
-            opacity: 0.8;
-            margin-top: 15px;
-            line-height: 1.7;
-            font-size: 0.9rem;
-        }
-
-        .user-question {
-            background: rgba(123, 94, 167, 0.15);
-            border: 1px solid rgba(123, 94, 167, 0.3);
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .user-question-label {
-            font-size: 0.7rem;
-            color: var(--mystic-violet);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 8px;
-        }
-
-        .user-question-text {
+        .reading {
+            line-height: 1.8;
             font-size: 1rem;
-            color: var(--star-white);
         }
-
-        .reading-content {
-            line-height: 1.9;
-            font-size: 1rem;
-            color: var(--star-white);
-        }
-
-        .reading-content p { margin-bottom: 18px; }
-
-        .reading-section-title {
+        .reading p { margin-bottom: 15px; }
+        .section-title {
             font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
             color: var(--gold);
-            margin: 25px 0 12px;
+            font-size: 1.1rem;
+            margin: 25px 0 10px;
         }
-
-        .reading-section-title::before { content: '✧ '; }
-
-        .action-buttons {
+        .section-title::before { content: '✧ '; }
+        .action-btns {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 30px;
+            gap: 10px;
+            margin-top: 25px;
         }
-
-        .action-btn {
-            padding: 14px 25px;
-            background: transparent;
-            border: 1px solid var(--gold);
+        .error {
+            background: rgba(244,67,54,0.2);
+            border: 1px solid rgba(244,67,54,0.5);
             border-radius: 10px;
-            font-family: 'Cinzel', serif;
-            font-size: 0.85rem;
-            color: var(--gold);
-            cursor: pointer;
-        }
-
-        .action-btn:active { transform: scale(0.98); }
-
-        .action-btn.violet {
-            border-color: var(--mystic-violet);
-            color: var(--mystic-violet);
-        }
-
-        .error-message {
-            background: rgba(180, 50, 50, 0.2);
-            border: 1px solid rgba(180, 50, 50, 0.5);
-            border-radius: 10px;
-            padding: 14px;
-            margin-top: 15px;
+            padding: 12px;
             color: #ff9999;
+            margin-top: 15px;
             display: none;
+            text-align: center;
         }
-
-        .error-message.active { display: block; }
-
+        .error.active { display: block; }
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: rgba(26, 10, 46, 0.95);
+            background: rgba(26,10,46,0.95);
             border: 1px solid var(--gold);
-            border-radius: 10px;
-            padding: 12px 24px;
+            border-radius: 8px;
+            padding: 10px 20px;
             color: var(--gold);
-            font-size: 0.85rem;
-            z-index: 2000;
+            z-index: 300;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
-
         .toast.active {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
-
-        /* Question Modal */
-        .question-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(13, 6, 24, 0.95);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .question-modal.active { display: flex; }
-
-        .modal-content {
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.98), rgba(13, 6, 24, 0.99));
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 16px;
-            padding: 30px 25px;
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .modal-title {
-            font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
-            color: var(--gold);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
         @media (min-width: 480px) {
-            .action-buttons { flex-direction: row; justify-content: center; }
-            .action-btn { flex: 1; max-width: 200px; }
+            .action-btns { flex-direction: row; }
+            .action-btns .btn { flex: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="stars-container" id="stars"></div>
-    <div class="toast" id="toast">Copied!</div>
+    <div class="stars" id="stars"></div>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="celestial-loader">
-            <div class="loader-ring"></div>
-            <div class="loader-ring"></div>
-        </div>
-        <p class="loading-text" id="loadingText">Consulting the Stars...</p>
-        <p class="loading-subtext" id="loadingSubtext">Analyzing your birth chart</p>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Consulting the Stars...</p>
     </div>
 
-    <!-- Payment Modal - No QR -->
-    <div class="payment-modal" id="paymentModal">
-        <div class="payment-card">
-            <div class="payment-icon">🔮</div>
-            <h2 class="payment-title">Complete Payment</h2>
-            <div class="payment-amount" id="paymentAmount">₹---</div>
-            <p class="payment-desc">Pay to unlock your personalized reading</p>
+    <div class="toast" id="toast"></div>
 
-            <div class="upi-buttons">
-                <a href="#" class="upi-btn gpay" id="gpayBtn">📱 Pay with Google Pay</a>
-                <a href="#" class="upi-btn phonepe" id="phonepeBtn">💜 Pay with PhonePe</a>
-                <a href="#" class="upi-btn paytm" id="paytmBtn">💙 Pay with Paytm</a>
-                <a href="#" class="upi-btn all-upi" id="allUpiBtn">🏦 Open Any UPI App</a>
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-card">
+            <div class="modal-icon">🔮</div>
+            <h2 class="modal-title">Complete Payment</h2>
+            <div class="amount" id="amount">₹100</div>
+
+            <div class="upi-box">
+                <div class="upi-label">Pay to UPI ID:</div>
+                <div class="upi-id" id="upiId">Loading...</div>
+                <button class="copy-btn" id="copyBtn">📋 Copy UPI ID</button>
             </div>
 
-            <div class="upi-divider"><span>or pay manually</span></div>
-
-            <div class="upi-id-box">
-                <div class="upi-id-label">UPI ID</div>
-                <div class="upi-id-value" id="upiIdDisplay">Loading...</div>
+            <div class="steps">
+                <div class="steps-title">📱 How to Pay:</div>
+                1. Copy the UPI ID above<br>
+                2. Open GPay / PhonePe / Paytm<br>
+                3. Go to "Pay to UPI ID"<br>
+                4. Paste UPI ID & enter ₹<span id="amountText">100</span><br>
+                5. Complete payment & return here
             </div>
 
-            <button class="copy-btn" id="copyBtn">📋 Copy UPI ID</button>
-            <p class="manual-hint">Open any UPI app → Send Money → Paste UPI ID → Pay ₹<span id="amountHint">100</span></p>
+            <div class="warning">
+                ⚠️ Reading will only unlock after successful payment verification
+            </div>
 
-            <button class="verify-btn" id="verifyBtn">✓ I Have Paid</button>
+            <button class="verify-btn" id="verifyBtn">✓ I Have Paid - Verify Now</button>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
-
-            <p class="payment-security">🔒 Secure UPI Payment</p>
         </div>
     </div>
 
-    <!-- Question Modal -->
-    <div class="question-modal" id="questionModal">
-        <div class="modal-content">
-            <h3 class="modal-title">🔮 Ask Another Question</h3>
-            <div class="question-tags" id="modalTags"></div>
-            <textarea class="custom-question" id="modalQuestion" placeholder="Type your question..."></textarea>
-            <button class="oracle-button" id="modalSubmit">Pay & Get Answer</button>
-            <button class="action-btn" id="modalClose" style="margin-top:10px;width:100%;">Cancel</button>
+    <div class="container">
+        <div class="header">
+            <h1>✨ CELESTIAL ORACLE</h1>
+            <p>ज्योतिष | Jyotish | ജ്യോതിഷം</p>
         </div>
-    </div>
 
-    <div class="oracle-container">
-        <header class="oracle-header">
-            <svg class="zodiac-wheel" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.5"/>
-                <circle cx="50" cy="50" r="35" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.3"/>
-                <text x="50" y="12" text-anchor="middle" fill="#D4AF37" font-size="8">♈</text>
-                <text x="80" y="25" text-anchor="middle" fill="#D4AF37" font-size="8">♉</text>
-                <text x="93" y="53" text-anchor="middle" fill="#D4AF37" font-size="8">♊</text>
-                <text x="80" y="80" text-anchor="middle" fill="#D4AF37" font-size="8">♋</text>
-                <text x="50" y="93" text-anchor="middle" fill="#D4AF37" font-size="8">♌</text>
-                <text x="20" y="80" text-anchor="middle" fill="#D4AF37" font-size="8">♍</text>
-                <text x="7" y="53" text-anchor="middle" fill="#D4AF37" font-size="8">♎</text>
-                <text x="20" y="25" text-anchor="middle" fill="#D4AF37" font-size="8">♏</text>
-                <circle cx="50" cy="50" r="8" fill="#D4AF37" opacity="0.8"/>
-            </svg>
-            <h1 class="oracle-title">CELESTIAL ORACLE</h1>
-            <p class="oracle-subtitle">✨ ज्योतिष | Jyotish | ജ്യോതിഷം ✨</p>
-        </header>
-
-        <div class="oracle-card" id="inputCard">
-            <div class="card-decoration">
-                <svg viewBox="0 0 60 60">
-                    <path d="M30 5 L32 25 L30 20 L28 25 Z" fill="currentColor"/>
-                    <path d="M30 55 L32 35 L30 40 L28 35 Z" fill="currentColor"/>
-                    <path d="M5 30 L25 32 L20 30 L25 28 Z" fill="currentColor"/>
-                    <path d="M55 30 L35 32 L40 30 L35 28 Z" fill="currentColor"/>
-                    <circle cx="30" cy="30" r="10" fill="none" stroke="currentColor" stroke-width="1"/>
-                </svg>
-            </div>
-
-            <form id="birthForm">
+        <!-- Input Form -->
+        <div class="card" id="inputCard">
+            <form id="mainForm">
                 <div class="form-group">
-                    <label class="form-label">🌐 Language / भाषा</label>
+                    <label class="form-label">🌐 Language</label>
                     <select id="language" class="form-select">
                         <option value="english">English</option>
                         <option value="hindi">हिन्दी (Hindi)</option>
@@ -784,114 +458,96 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Your Name / आपका नाम</label>
-                    <input type="text" id="birthName" class="form-input" placeholder="Enter your name" required maxlength="50">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter your name" required maxlength="50">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Gender / लिंग</label>
+                    <label class="form-label">Gender</label>
                     <select id="gender" class="form-select">
-                        <option value="male">Male / पुरुष</option>
-                        <option value="female">Female / महिला</option>
-                        <option value="other">Other / अन्य</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Date of Birth</label>
-                        <input type="date" id="birthDate" class="form-input" required>
+                        <input type="date" id="dob" class="form-input" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Time of Birth</label>
-                        <input type="time" id="birthTime" class="form-input" required>
+                        <input type="time" id="tob" class="form-input" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Place of Birth / जन्म स्थान</label>
-                    <input type="text" id="birthPlace" class="form-input" placeholder="City, State, Country" required maxlength="100">
+                    <label class="form-label">Place of Birth</label>
+                    <input type="text" id="pob" class="form-input" placeholder="City, State, Country" required maxlength="100">
                 </div>
 
-                <div class="question-section">
-                    <label class="question-label">🔮 What do you want to know?</label>
-                    <div class="question-tags" id="questionTags">
-                        <span class="question-tag" data-q="marriage">💍 Marriage</span>
-                        <span class="question-tag" data-q="job">💼 Job</span>
-                        <span class="question-tag" data-q="career">📈 Career</span>
-                        <span class="question-tag" data-q="wealth">💰 Wealth</span>
-                        <span class="question-tag" data-q="health">🏥 Health</span>
-                        <span class="question-tag" data-q="love">❤️ Love</span>
-                        <span class="question-tag" data-q="education">📚 Education</span>
-                        <span class="question-tag" data-q="children">👶 Children</span>
-                        <span class="question-tag" data-q="travel">✈️ Foreign</span>
-                        <span class="question-tag" data-q="business">🏪 Business</span>
+                <div class="form-group">
+                    <label class="form-label">🔮 What do you want to know?</label>
+                    <div class="tags" id="tags">
+                        <span class="tag" data-q="marriage">💍 Marriage</span>
+                        <span class="tag" data-q="job">💼 Job</span>
+                        <span class="tag" data-q="career">📈 Career</span>
+                        <span class="tag" data-q="wealth">💰 Wealth</span>
+                        <span class="tag" data-q="health">🏥 Health</span>
+                        <span class="tag" data-q="love">❤️ Love</span>
+                        <span class="tag" data-q="education">📚 Education</span>
+                        <span class="tag" data-q="children">👶 Children</span>
+                        <span class="tag" data-q="foreign">✈️ Foreign</span>
+                        <span class="tag" data-q="business">🏪 Business</span>
                     </div>
-                    <textarea class="custom-question" id="customQuestion" placeholder="Or ask a specific question..." maxlength="300"></textarea>
+                    <textarea id="customQ" placeholder="Or type your specific question..."></textarea>
                 </div>
 
-                <button type="submit" class="oracle-button" id="submitBtn">🔮 Get My Reading</button>
-                <div class="error-message" id="errorMsg"></div>
+                <button type="submit" class="btn btn-gold">🔮 Get My Reading</button>
+                <div class="error" id="error"></div>
             </form>
         </div>
 
         <!-- Results -->
-        <div class="results-container" id="resultsContainer">
-            <div class="results-card">
+        <div class="results" id="results">
+            <div class="card">
                 <div class="results-header">
-                    <div class="zodiac-symbol-result" id="zodiacSymbol"></div>
-                    <h2 class="sun-sign" id="sunSign">Aries</h2>
-                    <div class="badges-container">
+                    <div class="zodiac-icon" id="zodiacIcon">♈</div>
+                    <div class="sun-sign" id="sunSign">Aries</div>
+                    <div class="badges">
                         <span class="badge badge-gold" id="elementBadge">Fire</span>
                         <span class="badge badge-violet" id="pathBadge">Life Path 7</span>
-                        <span class="badge badge-gold" id="langBadge">English</span>
                     </div>
-                    <p class="birth-info" id="birthInfo"></p>
-                </div>
-                
-                <div class="user-question" id="questionSection" style="display:none;">
-                    <div class="user-question-label">Your Question</div>
-                    <div class="user-question-text" id="questionText"></div>
+                    <p style="color:var(--gold-light);opacity:0.8;margin-top:10px;font-size:0.9rem;" id="birthDetails"></p>
                 </div>
 
-                <div class="reading-content" id="readingContent"></div>
-                
-                <div class="action-buttons">
-                    <button class="action-btn violet" id="askMoreBtn">🔮 Ask Another</button>
-                    <button class="action-btn" id="newReadingBtn">✨ New Reading</button>
+                <div class="reading" id="readingContent"></div>
+
+                <div class="action-btns">
+                    <button class="btn btn-outline" id="newBtn">✨ New Reading</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Security: Prevent console access in production
-        if (location.hostname !== 'localhost') {
-            console.log = console.warn = console.error = function(){};
-        }
-
-        const languageNames = {
-            english: 'English', hindi: 'हिन्दी', tamil: 'தமிழ்', telugu: 'తెలుగు',
-            malayalam: 'മലയാളം', kannada: 'ಕನ್ನಡ', bengali: 'বাংলা', marathi: 'मराठी',
-            gujarati: 'ગુજરાતી', punjabi: 'ਪੰਜਾਬੀ'
-        };
-
-        const questionMap = {
-            marriage: "Marriage predictions - when, partner compatibility",
-            job: "Job predictions - opportunities, timing",
-            career: "Career growth and professional success",
-            wealth: "Wealth and financial prosperity",
-            health: "Health predictions and wellness",
-            love: "Love life and relationships",
-            education: "Education and academic success",
-            children: "Children and family predictions",
-            travel: "Foreign travel and settlement",
-            business: "Business success predictions"
-        };
-
         let selectedTags = [];
         let userData = null;
-        let paymentData = null;
+        let paymentToken = null;
+
+        const questionMap = {
+            marriage: "Marriage predictions - when will I marry, partner details",
+            job: "Job predictions - opportunities, timing, salary",
+            career: "Career growth and success predictions",
+            wealth: "Wealth and financial prosperity predictions",
+            health: "Health predictions and concerns",
+            love: "Love life and relationship predictions",
+            education: "Education and academic success",
+            children: "Children and progeny predictions",
+            foreign: "Foreign travel and settlement chances",
+            business: "Business success predictions"
+        };
 
         // Create stars
         (function() {
@@ -901,17 +557,15 @@
                 s.className = 'star';
                 s.style.left = Math.random() * 100 + '%';
                 s.style.top = Math.random() * 100 + '%';
-                s.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
-                s.style.setProperty('--delay', Math.random() * 3 + 's');
+                s.style.animationDelay = Math.random() * 3 + 's';
                 c.appendChild(s);
             }
         })();
 
-        // Set max date
-        document.getElementById('birthDate').max = new Date().toISOString().split('T')[0];
+        document.getElementById('dob').max = new Date().toISOString().split('T')[0];
 
         // Tag selection
-        document.querySelectorAll('.question-tag').forEach(tag => {
+        document.querySelectorAll('.tag').forEach(tag => {
             tag.onclick = function() {
                 this.classList.toggle('active');
                 const q = this.dataset.q;
@@ -927,113 +581,90 @@
             const t = document.getElementById('toast');
             t.textContent = msg;
             t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 2500);
+            setTimeout(() => t.classList.remove('active'), 3000);
         }
 
         function showError(msg) {
-            const e = document.getElementById('errorMsg');
+            const e = document.getElementById('error');
             e.textContent = msg;
             e.classList.add('active');
             setTimeout(() => e.classList.remove('active'), 5000);
         }
 
-        // Sanitize input
-        function sanitize(str) {
-            return String(str).replace(/<[^>]*>/g, '').trim();
-        }
-
-        // Fetch payment (secure from backend)
-        async function getPayment() {
-            try {
-                const res = await fetch('/api/payment');
-                if (!res.ok) throw new Error('Payment unavailable');
-                const data = await res.json();
-                if (!data.success) throw new Error(data.message);
-                return data.data;
-            } catch (e) {
-                showError('Payment system error. Try again.');
-                return null;
-            }
-        }
-
         // Form submit
-        document.getElementById('birthForm').onsubmit = async function(e) {
+        document.getElementById('mainForm').onsubmit = async function(e) {
             e.preventDefault();
 
-            const name = sanitize(document.getElementById('birthName').value);
-            const birthDate = document.getElementById('birthDate').value;
-            const birthTime = document.getElementById('birthTime').value;
-            const birthPlace = sanitize(document.getElementById('birthPlace').value);
+            const name = document.getElementById('name').value.trim();
+            const dob = document.getElementById('dob').value;
+            const tob = document.getElementById('tob').value;
+            const pob = document.getElementById('pob').value.trim();
 
-            if (!name || !birthDate || !birthTime || !birthPlace) {
+            if (!name || !dob || !tob || !pob) {
                 showError('Please fill all fields');
                 return;
             }
 
             userData = {
-                name, birthDate, birthTime, birthPlace,
+                name, birthDate: dob, birthTime: tob, birthPlace: pob,
                 language: document.getElementById('language').value,
                 gender: document.getElementById('gender').value,
-                customQ: sanitize(document.getElementById('customQuestion').value)
+                customQ: document.getElementById('customQ').value.trim()
             };
 
             // Get payment details
-            document.getElementById('loadingOverlay').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Preparing...';
-            document.getElementById('loadingSubtext').textContent = '';
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Preparing payment...';
 
-            paymentData = await getPayment();
-            document.getElementById('loadingOverlay').classList.remove('active');
+            try {
+                const res = await fetch('/api/payment');
+                const data = await res.json();
 
-            if (paymentData) {
-                document.getElementById('paymentAmount').textContent = '₹' + paymentData.amount;
-                document.getElementById('amountHint').textContent = paymentData.amount;
-                document.getElementById('gpayBtn').href = paymentData.urls.gpay;
-                document.getElementById('phonepeBtn').href = paymentData.urls.phonepe;
-                document.getElementById('paytmBtn').href = paymentData.urls.paytm;
-                document.getElementById('allUpiBtn').href = paymentData.urls.upi;
-                document.getElementById('upiIdDisplay').textContent = paymentData.upiId;
+                if (!data.success) throw new Error(data.message);
+
+                paymentToken = data.data.token;
+                document.getElementById('amount').textContent = '₹' + data.data.amount;
+                document.getElementById('amountText').textContent = data.data.amount;
+                document.getElementById('upiId').textContent = data.data.upiId;
+
+                document.getElementById('loading').classList.remove('active');
                 document.getElementById('paymentModal').classList.add('active');
+
+            } catch (err) {
+                document.getElementById('loading').classList.remove('active');
+                showError(err.message || 'Payment error');
             }
         };
 
         // Copy UPI
         document.getElementById('copyBtn').onclick = function() {
-            if (paymentData) {
-                navigator.clipboard.writeText(paymentData.upiId).then(() => {
-                    this.textContent = '✓ Copied!';
-                    showToast('UPI ID copied! Pay ₹' + paymentData.amount);
-                    setTimeout(() => this.textContent = '📋 Copy UPI ID', 2000);
-                });
-            }
+            const upiId = document.getElementById('upiId').textContent;
+            navigator.clipboard.writeText(upiId).then(() => {
+                this.textContent = '✓ Copied!';
+                showToast('UPI ID copied! Now open your UPI app');
+                setTimeout(() => this.textContent = '📋 Copy UPI ID', 2000);
+            });
         };
 
         // Cancel
         document.getElementById('cancelBtn').onclick = function() {
             document.getElementById('paymentModal').classList.remove('active');
+            paymentToken = null;
         };
 
-        // Verify & get reading
+        // Verify payment
         document.getElementById('verifyBtn').onclick = async function() {
+            if (!paymentToken) {
+                showToast('Payment session expired. Try again.');
+                document.getElementById('paymentModal').classList.remove('active');
+                return;
+            }
+
             document.getElementById('paymentModal').classList.remove('active');
-            await getReading();
-        };
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Verifying payment...';
 
-        async function getReading() {
-            const lang = userData.language;
-            const loadingTexts = {
-                hindi: { m: 'ग्रहों से पूछ रहे हैं...', s: 'कुंडली विश्लेषण' },
-                tamil: { m: 'நட்சத்திரங்களை ஆலோசிக்கிறது...', s: 'ஜாதகம் பகுப்பாய்வு' },
-                telugu: { m: 'నక్షత్రాలను సంప్రదిస్తోంది...', s: 'జాతకం విశ్లేషణ' },
-                malayalam: { m: 'നക്ഷത്രങ്ങളോട് ചോദിക്കുന്നു...', s: 'ജാതകം വിശകലനം' },
-                english: { m: 'Consulting the Stars...', s: 'Analyzing your birth chart' }
-            };
-            const lt = loadingTexts[lang] || loadingTexts.english;
-
-            document.getElementById('loadingText').textContent = lt.m;
-            document.getElementById('loadingSubtext').textContent = lt.s;
-            document.getElementById('loadingOverlay').classList.add('active');
-
+            // Build questions
             let questions = selectedTags.map(t => questionMap[t] || '').join(' ');
             if (userData.customQ) questions += ' ' + userData.customQ;
             if (!questions) questions = 'Complete life reading';
@@ -1043,119 +674,55 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        name: userData.name,
-                        birthDate: userData.birthDate,
-                        birthTime: userData.birthTime,
-                        birthPlace: userData.birthPlace,
-                        language: userData.language,
-                        gender: userData.gender,
-                        questions: questions
+                        ...userData,
+                        questions: questions,
+                        paymentToken: paymentToken
                     })
                 });
 
                 const result = await res.json();
-                if (!result.success) throw new Error(result.message);
 
+                if (!result.success) {
+                    throw new Error(result.message || 'Payment verification failed');
+                }
+
+                // Success - show reading
                 const d = result.data;
 
-                document.getElementById('zodiacSymbol').innerHTML = `
-                    <svg viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#D4AF37" stroke-width="2" opacity="0.5"/>
-                        <text x="50" y="62" text-anchor="middle" font-size="45" fill="#D4AF37">${d.zodiac.symbol}</text>
-                    </svg>`;
+                document.getElementById('zodiacIcon').textContent = d.zodiac.symbol;
                 document.getElementById('sunSign').textContent = d.zodiac.name;
                 document.getElementById('elementBadge').textContent = d.zodiac.element;
                 document.getElementById('pathBadge').textContent = 'Life Path ' + d.lifePathNumber;
-                document.getElementById('langBadge').textContent = languageNames[userData.language];
-                document.getElementById('birthInfo').innerHTML = `<strong>${d.name}</strong><br>${d.birthDate} at ${d.birthTime}<br>${d.birthPlace}`;
-
-                if (userData.customQ || selectedTags.length) {
-                    document.getElementById('questionSection').style.display = 'block';
-                    document.getElementById('questionText').textContent = userData.customQ || selectedTags.join(', ');
-                } else {
-                    document.getElementById('questionSection').style.display = 'none';
-                }
+                document.getElementById('birthDetails').innerHTML = 
+                    `<strong>${d.name}</strong><br>${d.birthDate} at ${d.birthTime}<br>${d.birthPlace}`;
 
                 let html = d.reading
-                    .replace(/\*\*([^*]+)\*\*/g, '<div class="reading-section-title">$1</div>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<div class="section-title">$1</div>')
                     .replace(/\n\n/g, '</p><p>')
                     .replace(/\n/g, '<br>');
                 document.getElementById('readingContent').innerHTML = '<p>' + html + '</p>';
 
                 document.getElementById('inputCard').style.display = 'none';
-                document.getElementById('resultsContainer').classList.add('active');
+                document.getElementById('results').classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            } catch (e) {
-                showError(e.message || 'Failed to get reading');
+                paymentToken = null; // Clear used token
+
+            } catch (err) {
+                showError(err.message || 'Verification failed. Please try again.');
             } finally {
-                document.getElementById('loadingOverlay').classList.remove('active');
+                document.getElementById('loading').classList.remove('active');
             }
-        }
+        };
 
         // New reading
-        document.getElementById('newReadingBtn').onclick = function() {
-            document.getElementById('resultsContainer').classList.remove('active');
+        document.getElementById('newBtn').onclick = function() {
+            document.getElementById('results').classList.remove('active');
             document.getElementById('inputCard').style.display = 'block';
-            document.getElementById('birthForm').reset();
+            document.getElementById('mainForm').reset();
             selectedTags = [];
-            document.querySelectorAll('.question-tag').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        // Ask more
-        document.getElementById('askMoreBtn').onclick = async function() {
-            const modal = document.getElementById('questionModal');
-            const tags = document.getElementById('modalTags');
-            tags.innerHTML = '';
-            
-            Object.keys(questionMap).forEach(k => {
-                const t = document.createElement('span');
-                t.className = 'question-tag';
-                t.dataset.q = k;
-                t.textContent = document.querySelector(`.question-tag[data-q="${k}"]`).textContent;
-                t.onclick = function() {
-                    document.querySelectorAll('#modalTags .question-tag').forEach(x => x.classList.remove('active'));
-                    this.classList.add('active');
-                };
-                tags.appendChild(t);
-            });
-
-            document.getElementById('modalQuestion').value = '';
-            modal.classList.add('active');
-        };
-
-        document.getElementById('modalSubmit').onclick = async function() {
-            const active = document.querySelector('#modalTags .question-tag.active');
-            const customQ = sanitize(document.getElementById('modalQuestion').value);
-
-            selectedTags = active ? [active.dataset.q] : [];
-            userData.customQ = customQ;
-
-            document.getElementById('questionModal').classList.remove('active');
-
-            // Get new payment
-            document.getElementById('loadingOverlay').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Preparing...';
-            document.getElementById('loadingSubtext').textContent = '';
-
-            paymentData = await getPayment();
-            document.getElementById('loadingOverlay').classList.remove('active');
-
-            if (paymentData) {
-                document.getElementById('paymentAmount').textContent = '₹' + paymentData.amount;
-                document.getElementById('amountHint').textContent = paymentData.amount;
-                document.getElementById('gpayBtn').href = paymentData.urls.gpay;
-                document.getElementById('phonepeBtn').href = paymentData.urls.phonepe;
-                document.getElementById('paytmBtn').href = paymentData.urls.paytm;
-                document.getElementById('allUpiBtn').href = paymentData.urls.upi;
-                document.getElementById('upiIdDisplay').textContent = paymentData.upiId;
-                document.getElementById('paymentModal').classList.add('active');
-            }
-        };
-
-        document.getElementById('modalClose').onclick = function() {
-            document.getElementById('questionModal').classList.remove('active');
         };
     </script>
 </body>

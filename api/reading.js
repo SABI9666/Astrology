@@ -1,4 +1,4 @@
-// Reading Display API - Shows reading from encoded URL data
+// Reading Display API - Online view and PDF download
 
 // Decode base64 URL-safe data
 function decodeReading(encoded) {
@@ -16,10 +16,10 @@ export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
-    const { r } = req.query;
+    const { r, format } = req.query;
 
     if (!r) {
-        return res.status(400).send(errorPage('No Reading', 'No reading data found in URL.'));
+        return res.status(400).send(errorPage('No Reading', 'No reading data found.'));
     }
 
     const data = decodeReading(r);
@@ -27,13 +27,25 @@ export default function handler(req, res) {
         return res.status(400).send(errorPage('Invalid Data', 'Could not decode reading data.'));
     }
 
-    // Format reading HTML
+    // If PDF format requested, return PDF-ready HTML
+    if (format === 'pdf') {
+        return res.status(200).send(pdfPage(data, r));
+    }
+
+    // Default: Online reading view
+    return res.status(200).send(readingPage(data, r));
+}
+
+// Online reading page
+function readingPage(data, encodedReading) {
     const formattedReading = data.reading
         .replace(/\*\*([^*]+)\*\*/g, '<div class="section-title">✧ $1</div>')
         .replace(/\n\n/g, '</p><p>')
         .replace(/\n/g, '<br>');
 
-    return res.status(200).send(`
+    const pdfUrl = `?r=${encodedReading}&format=pdf`;
+
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,7 +69,7 @@ export default function handler(req, res) {
             background: var(--midnight);
             color: var(--white);
             min-height: 100vh;
-            line-height: 1.6;
+            line-height: 1.7;
         }
         .stars {
             position: fixed;
@@ -81,7 +93,7 @@ export default function handler(req, res) {
         .container {
             position: relative;
             z-index: 10;
-            max-width: 650px;
+            max-width: 700px;
             margin: 0 auto;
             padding: 30px 16px;
         }
@@ -137,6 +149,17 @@ export default function handler(req, res) {
             font-size: 0.95rem;
             margin-top: 15px;
         }
+        .download-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
         .reading {
             font-size: 1rem;
             line-height: 1.9;
@@ -169,21 +192,16 @@ export default function handler(req, res) {
             opacity: 0.6;
             font-size: 0.8rem;
         }
-        .share-btn {
+        .home-btn {
             display: inline-block;
             padding: 12px 25px;
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
+            background: linear-gradient(135deg, #D4AF37, #c9a227);
+            color: #000;
             text-decoration: none;
             border-radius: 25px;
             font-weight: 600;
             margin-top: 15px;
             font-size: 0.9rem;
-        }
-        @media print {
-            body { background: white; color: black; }
-            .stars { display: none; }
-            .card { border: 2px solid #D4AF37; box-shadow: none; }
         }
     </style>
 </head>
@@ -204,6 +222,7 @@ export default function handler(req, res) {
                     ${data.birthDate} at ${data.birthTime}<br>
                     ${data.birthPlace}
                 </div>
+                <a href="${pdfUrl}" class="download-btn" target="_blank">📄 Download PDF Report</a>
             </div>
 
             <div class="reading">
@@ -213,13 +232,12 @@ export default function handler(req, res) {
             <div class="footer">
                 <div class="footer-logo">✨ Celestial Oracle</div>
                 <p>AI-Powered Vedic Astrology</p>
-                <a href="/" class="share-btn">🔮 Get Your Reading</a>
+                <a href="/" class="home-btn">🔮 Get Your Reading</a>
             </div>
         </div>
     </div>
 
     <script>
-        // Create stars
         (function() {
             const c = document.getElementById('stars');
             for (let i = 0; i < 60; i++) {
@@ -234,9 +252,243 @@ export default function handler(req, res) {
     </script>
 </body>
 </html>
-    `);
+    `;
 }
 
+// PDF download page (print-friendly)
+function pdfPage(data, encodedReading) {
+    const formattedReading = data.reading
+        .replace(/\*\*([^*]+)\*\*/g, '<h3 class="section-title">$1</h3>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+
+    const generatedDate = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : new Date().toLocaleDateString();
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.name} - Astrology Reading - Celestial Oracle</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans', Georgia, serif;
+            background: #fff;
+            color: #333;
+            line-height: 1.8;
+            padding: 0;
+        }
+        
+        .pdf-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        /* Header */
+        .pdf-header {
+            text-align: center;
+            border-bottom: 3px solid #D4AF37;
+            padding-bottom: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .pdf-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: #D4AF37;
+            margin-bottom: 5px;
+        }
+        
+        .pdf-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* User Info */
+        .pdf-user-info {
+            background: linear-gradient(135deg, #f8f4ff, #fff);
+            border: 2px solid #D4AF37;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .pdf-zodiac {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        
+        .pdf-sign-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #1a0a2e;
+            margin-bottom: 10px;
+        }
+        
+        .pdf-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .pdf-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background: #f0e6ff;
+            color: #7b5ea7;
+            border: 1px solid #d4c4e8;
+        }
+        
+        .pdf-birth-info {
+            margin-top: 15px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .pdf-birth-info strong {
+            color: #1a0a2e;
+            font-size: 1.1rem;
+        }
+        
+        /* Reading Content */
+        .pdf-reading {
+            margin: 30px 0;
+        }
+        
+        .pdf-reading p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .section-title {
+            font-family: 'Cinzel', serif;
+            color: #D4AF37;
+            font-size: 1.2rem;
+            margin: 30px 0 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid #f0e6ff;
+            border-top: 2px solid #f0e6ff;
+            background: #fafafa;
+            padding-left: 10px;
+        }
+        
+        .section-title::before {
+            content: '✧ ';
+        }
+        
+        /* Footer */
+        .pdf-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #D4AF37;
+            text-align: center;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .pdf-footer-logo {
+            font-family: 'Cinzel', serif;
+            color: #D4AF37;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        /* Print button (hidden in print) */
+        .print-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .print-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .back-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #D4AF37, #c9a227);
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        @media print {
+            .print-controls { display: none !important; }
+            body { padding: 0; }
+            .pdf-container { padding: 20px; }
+            .pdf-header { page-break-after: avoid; }
+            .section-title { page-break-after: avoid; }
+            .pdf-reading p { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="pdf-container">
+        <div class="pdf-header">
+            <div class="pdf-logo">✨ CELESTIAL ORACLE</div>
+            <div class="pdf-subtitle">Personalized Vedic Astrology Reading</div>
+        </div>
+        
+        <div class="pdf-user-info">
+            <div class="pdf-zodiac">${data.zodiac?.symbol || '🔮'}</div>
+            <div class="pdf-sign-name">${data.zodiac?.name || 'Your Sign'}</div>
+            <div class="pdf-badges">
+                <span class="pdf-badge">${data.zodiac?.element || 'Element'} Sign</span>
+                <span class="pdf-badge">Life Path ${data.lifePathNumber || '?'}</span>
+            </div>
+            <div class="pdf-birth-info">
+                <strong>${data.name}</strong><br>
+                Born: ${data.birthDate} at ${data.birthTime}<br>
+                Place: ${data.birthPlace}
+            </div>
+        </div>
+        
+        <div class="pdf-reading">
+            <p>${formattedReading}</p>
+        </div>
+        
+        <div class="pdf-footer">
+            <div class="pdf-footer-logo">✨ Celestial Oracle</div>
+            <p>Generated on ${generatedDate}</p>
+            <p>This reading is for entertainment and guidance purposes only.</p>
+        </div>
+    </div>
+    
+    <div class="print-controls">
+        <a href="?r=${encodedReading}" class="back-btn">← Back</a>
+        <button class="print-btn" onclick="window.print()">📄 Print / Save PDF</button>
+    </div>
+</body>
+</html>
+    `;
+}
+
+// Error page
 function errorPage(title, message) {
     return `
 <!DOCTYPE html>
@@ -244,7 +496,7 @@ function errorPage(title, message) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error | Celestial Oracle</title>
+    <title>Error</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
@@ -264,14 +516,13 @@ function errorPage(title, message) {
             border: 1px solid rgba(244,67,54,0.5);
             text-align: center;
         }
-        .icon { font-size: 3rem; margin-bottom: 15px; }
-        h1 { color: #f44336; margin-bottom: 10px; }
+        h1 { color: #f44336; margin: 15px 0; }
         a { color: #D4AF37; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="icon">⚠️</div>
+        <div style="font-size: 3rem;">⚠️</div>
         <h1>${title}</h1>
         <p>${message}</p>
         <p style="margin-top: 20px;"><a href="/">← Back to Home</a></p>

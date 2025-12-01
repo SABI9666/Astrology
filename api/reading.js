@@ -1,4 +1,5 @@
-// Reading Display API - Online view and PDF download
+// Reading Display API - Online view and actual PDF file download
+const PDFDocument = require('pdfkit');
 
 // Decode base64 URL-safe data
 function decodeReading(encoded) {
@@ -12,7 +13,172 @@ function decodeReading(encoded) {
     }
 }
 
-export default function handler(req, res) {
+// Generate PDF document
+async function generatePDF(data) {
+    return new Promise((resolve, reject) => {
+        try {
+            const chunks = [];
+            const doc = new PDFDocument({
+                size: 'A4',
+                margins: { top: 50, bottom: 50, left: 50, right: 50 },
+                info: {
+                    Title: `${data.name} - Astrology Reading`,
+                    Author: 'Celestial Oracle',
+                    Subject: 'Vedic Astrology Reading',
+                    Creator: 'Celestial Oracle'
+                }
+            });
+
+            doc.on('data', chunk => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+
+            const pageWidth = doc.page.width - 100;
+            const gold = '#D4AF37';
+            const purple = '#1a0a2e';
+            const gray = '#666666';
+
+            // Header with decorative border
+            doc.rect(40, 40, doc.page.width - 80, 120)
+               .lineWidth(2)
+               .stroke(gold);
+
+            // Logo/Title
+            doc.fontSize(28)
+               .fillColor(gold)
+               .font('Helvetica-Bold')
+               .text('CELESTIAL ORACLE', 50, 60, { align: 'center', width: pageWidth });
+
+            doc.fontSize(12)
+               .fillColor(gray)
+               .font('Helvetica')
+               .text('Personalized Vedic Astrology Reading', 50, 95, { align: 'center', width: pageWidth });
+
+            // Decorative line
+            doc.moveTo(50, 130).lineTo(doc.page.width - 50, 130).stroke(gold);
+
+            // User Info Box
+            doc.rect(50, 180, pageWidth, 100)
+               .fillAndStroke('#f8f4ff', gold);
+
+            // Zodiac Symbol (using text)
+            doc.fontSize(40)
+               .fillColor(purple)
+               .text(data.zodiac?.symbol || '★', 70, 200, { width: 60 });
+
+            // User Details
+            doc.fontSize(18)
+               .fillColor(purple)
+               .font('Helvetica-Bold')
+               .text(data.name || 'Name', 140, 195);
+
+            doc.fontSize(11)
+               .fillColor(gray)
+               .font('Helvetica')
+               .text(`${data.zodiac?.name || 'Sign'} | ${data.zodiac?.element || 'Element'} | Life Path ${data.lifePathNumber || '?'}`, 140, 220);
+
+            doc.fontSize(10)
+               .text(`Born: ${data.birthDate || 'Date'} at ${data.birthTime || 'Time'}`, 140, 240);
+            doc.text(`Place: ${data.birthPlace || 'Place'}`, 140, 255);
+
+            // Reading Content
+            let yPos = 310;
+            const lineHeight = 16;
+            const sectionSpacing = 25;
+
+            doc.fontSize(14)
+               .fillColor(gold)
+               .font('Helvetica-Bold')
+               .text('YOUR PERSONALIZED READING', 50, yPos, { align: 'center', width: pageWidth });
+
+            yPos += 30;
+
+            // Decorative line
+            doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(gold);
+            yPos += 20;
+
+            // Process reading content
+            const reading = data.reading || 'No reading available.';
+            const lines = reading.split('\n');
+
+            doc.font('Helvetica').fontSize(11).fillColor('#333333');
+
+            for (const line of lines) {
+                // Check if we need a new page
+                if (yPos > doc.page.height - 80) {
+                    doc.addPage();
+                    yPos = 50;
+                    
+                    // Add header to new page
+                    doc.fontSize(10)
+                       .fillColor(gold)
+                       .font('Helvetica-Bold')
+                       .text('CELESTIAL ORACLE - Continued', 50, 30, { align: 'center', width: pageWidth });
+                    doc.moveTo(50, 45).lineTo(doc.page.width - 50, 45).stroke(gold);
+                    yPos = 60;
+                    doc.font('Helvetica').fontSize(11).fillColor('#333333');
+                }
+
+                // Check if line is a section title (marked with **)
+                if (line.includes('**')) {
+                    const title = line.replace(/\*\*/g, '').trim();
+                    if (title) {
+                        yPos += 10;
+                        doc.fontSize(13)
+                           .fillColor(gold)
+                           .font('Helvetica-Bold')
+                           .text('✧ ' + title, 50, yPos, { width: pageWidth });
+                        yPos += 22;
+                        doc.font('Helvetica').fontSize(11).fillColor('#333333');
+                    }
+                } else if (line.trim()) {
+                    // Regular text
+                    const textHeight = doc.heightOfString(line.trim(), { width: pageWidth });
+                    doc.text(line.trim(), 50, yPos, { width: pageWidth, align: 'justify' });
+                    yPos += textHeight + 8;
+                } else {
+                    // Empty line
+                    yPos += 10;
+                }
+            }
+
+            // Footer
+            yPos += 30;
+            if (yPos > doc.page.height - 100) {
+                doc.addPage();
+                yPos = 50;
+            }
+
+            doc.moveTo(50, yPos).lineTo(doc.page.width - 50, yPos).stroke(gold);
+            yPos += 15;
+
+            doc.fontSize(10)
+               .fillColor(gray)
+               .font('Helvetica')
+               .text(`Generated on ${new Date().toLocaleDateString('en-IN', { 
+                   year: 'numeric', 
+                   month: 'long', 
+                   day: 'numeric' 
+               })}`, 50, yPos, { align: 'center', width: pageWidth });
+
+            yPos += 15;
+            doc.fontSize(9)
+               .text('This reading is for guidance and entertainment purposes only.', 50, yPos, { align: 'center', width: pageWidth });
+
+            yPos += 20;
+            doc.fontSize(12)
+               .fillColor(gold)
+               .font('Helvetica-Bold')
+               .text('✨ Celestial Oracle', 50, yPos, { align: 'center', width: pageWidth });
+
+            doc.end();
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
@@ -27,9 +193,25 @@ export default function handler(req, res) {
         return res.status(400).send(errorPage('Invalid Data', 'Could not decode reading data.'));
     }
 
-    // If PDF format requested, return PDF-ready HTML
+    // Generate and download actual PDF file
     if (format === 'pdf') {
-        return res.status(200).send(pdfPage(data, r));
+        try {
+            const pdfBuffer = await generatePDF(data);
+            
+            // Create filename
+            const safeName = (data.name || 'reading').replace(/[^a-zA-Z0-9]/g, '_');
+            const filename = `Celestial_Oracle_${safeName}_${Date.now()}.pdf`;
+
+            // Set headers for file download
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Length', pdfBuffer.length);
+            
+            return res.status(200).send(pdfBuffer);
+        } catch (error) {
+            console.error('PDF generation error:', error);
+            return res.status(500).send(errorPage('PDF Error', 'Failed to generate PDF. Please try again.'));
+        }
     }
 
     // Default: Online reading view
@@ -150,15 +332,26 @@ function readingPage(data, encodedReading) {
             margin-top: 15px;
         }
         .download-btn {
-            display: inline-block;
-            padding: 12px 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
             background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
             text-decoration: none;
-            border-radius: 25px;
+            border-radius: 30px;
             font-weight: 600;
             margin-top: 20px;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        .download-btn:active {
+            transform: scale(0.98);
         }
         .reading {
             font-size: 1rem;
@@ -222,7 +415,10 @@ function readingPage(data, encodedReading) {
                     ${data.birthDate} at ${data.birthTime}<br>
                     ${data.birthPlace}
                 </div>
-                <a href="${pdfUrl}" class="download-btn" target="_blank">📄 Download PDF Report</a>
+                <a href="${pdfUrl}" class="download-btn">
+                    <span>📥</span>
+                    <span>Download PDF Report</span>
+                </a>
             </div>
 
             <div class="reading">
@@ -250,239 +446,6 @@ function readingPage(data, encodedReading) {
             }
         })();
     </script>
-</body>
-</html>
-    `;
-}
-
-// PDF download page (print-friendly)
-function pdfPage(data, encodedReading) {
-    const formattedReading = data.reading
-        .replace(/\*\*([^*]+)\*\*/g, '<h3 class="section-title">$1</h3>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>');
-
-    const generatedDate = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : new Date().toLocaleDateString();
-
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${data.name} - Astrology Reading - Celestial Oracle</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Noto Sans', Georgia, serif;
-            background: #fff;
-            color: #333;
-            line-height: 1.8;
-            padding: 0;
-        }
-        
-        .pdf-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-        }
-        
-        /* Header */
-        .pdf-header {
-            text-align: center;
-            border-bottom: 3px solid #D4AF37;
-            padding-bottom: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .pdf-logo {
-            font-family: 'Cinzel', serif;
-            font-size: 2rem;
-            color: #D4AF37;
-            margin-bottom: 5px;
-        }
-        
-        .pdf-subtitle {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        /* User Info */
-        .pdf-user-info {
-            background: linear-gradient(135deg, #f8f4ff, #fff);
-            border: 2px solid #D4AF37;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-            text-align: center;
-        }
-        
-        .pdf-zodiac {
-            font-size: 4rem;
-            margin-bottom: 10px;
-        }
-        
-        .pdf-sign-name {
-            font-family: 'Cinzel', serif;
-            font-size: 1.8rem;
-            color: #1a0a2e;
-            margin-bottom: 10px;
-        }
-        
-        .pdf-badges {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .pdf-badge {
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            background: #f0e6ff;
-            color: #7b5ea7;
-            border: 1px solid #d4c4e8;
-        }
-        
-        .pdf-birth-info {
-            margin-top: 15px;
-            color: #555;
-            font-size: 0.95rem;
-        }
-        
-        .pdf-birth-info strong {
-            color: #1a0a2e;
-            font-size: 1.1rem;
-        }
-        
-        /* Reading Content */
-        .pdf-reading {
-            margin: 30px 0;
-        }
-        
-        .pdf-reading p {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
-        
-        .section-title {
-            font-family: 'Cinzel', serif;
-            color: #D4AF37;
-            font-size: 1.2rem;
-            margin: 30px 0 15px;
-            padding: 10px 0;
-            border-bottom: 2px solid #f0e6ff;
-            border-top: 2px solid #f0e6ff;
-            background: #fafafa;
-            padding-left: 10px;
-        }
-        
-        .section-title::before {
-            content: '✧ ';
-        }
-        
-        /* Footer */
-        .pdf-footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #D4AF37;
-            text-align: center;
-            color: #666;
-            font-size: 0.85rem;
-        }
-        
-        .pdf-footer-logo {
-            font-family: 'Cinzel', serif;
-            color: #D4AF37;
-            font-size: 1rem;
-            margin-bottom: 5px;
-        }
-        
-        /* Print button (hidden in print) */
-        .print-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        
-        .print-btn {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .back-btn {
-            padding: 15px 25px;
-            background: linear-gradient(135deg, #D4AF37, #c9a227);
-            color: #000;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        @media print {
-            .print-controls { display: none !important; }
-            body { padding: 0; }
-            .pdf-container { padding: 20px; }
-            .pdf-header { page-break-after: avoid; }
-            .section-title { page-break-after: avoid; }
-            .pdf-reading p { page-break-inside: avoid; }
-        }
-    </style>
-</head>
-<body>
-    <div class="pdf-container">
-        <div class="pdf-header">
-            <div class="pdf-logo">✨ CELESTIAL ORACLE</div>
-            <div class="pdf-subtitle">Personalized Vedic Astrology Reading</div>
-        </div>
-        
-        <div class="pdf-user-info">
-            <div class="pdf-zodiac">${data.zodiac?.symbol || '🔮'}</div>
-            <div class="pdf-sign-name">${data.zodiac?.name || 'Your Sign'}</div>
-            <div class="pdf-badges">
-                <span class="pdf-badge">${data.zodiac?.element || 'Element'} Sign</span>
-                <span class="pdf-badge">Life Path ${data.lifePathNumber || '?'}</span>
-            </div>
-            <div class="pdf-birth-info">
-                <strong>${data.name}</strong><br>
-                Born: ${data.birthDate} at ${data.birthTime}<br>
-                Place: ${data.birthPlace}
-            </div>
-        </div>
-        
-        <div class="pdf-reading">
-            <p>${formattedReading}</p>
-        </div>
-        
-        <div class="pdf-footer">
-            <div class="pdf-footer-logo">✨ Celestial Oracle</div>
-            <p>Generated on ${generatedDate}</p>
-            <p>This reading is for entertainment and guidance purposes only.</p>
-        </div>
-    </div>
-    
-    <div class="print-controls">
-        <a href="?r=${encodedReading}" class="back-btn">← Back</a>
-        <button class="print-btn" onclick="window.print()">📄 Print / Save PDF</button>
-    </div>
 </body>
 </html>
     `;

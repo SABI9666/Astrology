@@ -1,98 +1,84 @@
-// Secure Payment API with rate limiting and validation
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const MAX_REQUESTS = 10; // max 10 requests per minute per IP
+// Secure Payment API with token generation
+const crypto = require('crypto');
+
+// Store valid tokens (in production, use Redis/database)
+const validTokens = new Map();
+const TOKEN_EXPIRY = 10 * 60 * 1000; // 10 minutes
+
+// Clean expired tokens periodically
+function cleanExpiredTokens() {
+    const now = Date.now();
+    for (const [token, data] of validTokens.entries()) {
+        if (now - data.created > TOKEN_EXPIRY) {
+            validTokens.delete(token);
+        }
+    }
+}
 
 export default function handler(req, res) {
-    // Security headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
-    
-    // Only allow GET
+
+    // POST = verify token, GET = generate payment
+    if (req.method === 'POST') {
+        // Verify payment token
+        const { token } = req.body || {};
+        
+        if (!token) {
+            return res.status(400).json({ success: false, valid: false, message: 'No token provided' });
+        }
+
+        cleanExpiredTokens();
+
+        if (validTokens.has(token)) {
+            const tokenData = validTokens.get(token);
+            // Token can only be used once
+            validTokens.delete(token);
+            return res.status(200).json({ success: true, valid: true, amount: tokenData.amount });
+        }
+
+        return res.status(400).json({ success: false, valid: false, message: 'Invalid or expired token' });
+    }
+
+    // GET = generate payment details
     if (req.method !== 'GET') {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
 
-    // Rate limiting by IP
-    const clientIP = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown';
-    const now = Date.now();
-    
-    if (rateLimitMap.has(clientIP)) {
-        const clientData = rateLimitMap.get(clientIP);
-        if (now - clientData.firstRequest < RATE_LIMIT_WINDOW) {
-            if (clientData.count >= MAX_REQUESTS) {
-                return res.status(429).json({ 
-                    success: false, 
-                    message: 'Too many requests. Please wait a moment.' 
-                });
-            }
-            clientData.count++;
-        } else {
-            rateLimitMap.set(clientIP, { firstRequest: now, count: 1 });
-        }
-    } else {
-        rateLimitMap.set(clientIP, { firstRequest: now, count: 1 });
-    }
-
-    // Clean old entries periodically
-    if (rateLimitMap.size > 1000) {
-        for (const [ip, data] of rateLimitMap.entries()) {
-            if (now - data.firstRequest > RATE_LIMIT_WINDOW * 5) {
-                rateLimitMap.delete(ip);
-            }
-        }
-    }
-
-    // Get config from environment (secure)
     const upiId = process.env.UPI_ID;
     const upiName = process.env.UPI_NAME || 'Celestial Oracle';
     const amount = process.env.PAYMENT_AMOUNT || '100';
 
-    // Validate UPI ID format
     if (!upiId || !upiId.includes('@')) {
-        return res.status(500).json({
-            success: false,
-            message: 'Payment system not configured properly.'
-        });
+        return res.status(500).json({ success: false, message: 'Payment not configured' });
     }
 
-    // Validate amount is a positive number
-    const numAmount = parseInt(amount, 10);
-    if (isNaN(numAmount) || numAmount <= 0 || numAmount > 100000) {
-        return res.status(500).json({
-            success: false,
-            message: 'Invalid payment configuration.'
-        });
-    }
-
-    // Sanitize name (remove special characters)
-    const safeName = upiName.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
+    // Generate unique payment token
+    const paymentToken = crypto.randomBytes(32).toString('hex');
     
-    // Build UPI URL with minimal params (more compatible)
-    // Only essential params: pa (payee), pn (name), am (amount), cu (currency)
-    const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(safeName)}&am=${numAmount}&cu=INR`;
+    // Store token with timestamp
+    cleanExpiredTokens();
+    validTokens.set(paymentToken, {
+        created: Date.now(),
+        amount: amount
+    });
+
+    // Build simple UPI URL (most compatible format)
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${amount}&cu=INR`;
 
     return res.status(200).json({
         success: true,
         data: {
-            amount: numAmount.toString(),
-            // All apps use same base UPI URL - more reliable
-            urls: {
-                gpay: upiString,
-                phonepe: upiString,
-                paytm: upiString,
-                upi: upiString
-            },
-            upiId: upiId
-        },
-        // Add timestamp for client-side validation
-        timestamp: now
+            amount: amount,
+            upiId: upiId,
+            upiUrl: upiUrl,
+            token: paymentToken,
+            expiresIn: TOKEN_EXPIRY
+        }
     });
 }

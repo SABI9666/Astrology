@@ -20,6 +20,7 @@
             --cosmic-blue: #2a1f5e;
             --star-white: #f8f4ff;
             --mystic-violet: #7b5ea7;
+            --success-green: #4CAF50;
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
@@ -413,6 +414,161 @@
             50% { opacity: 1; }
         }
 
+        /* Payment Modal */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(13, 6, 24, 0.98);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .payment-modal.active { display: flex; }
+
+        .payment-card {
+            background: linear-gradient(145deg, rgba(26, 10, 46, 0.98), rgba(13, 6, 24, 0.99));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 30px 25px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .payment-icon { font-size: 3.5rem; margin-bottom: 10px; }
+
+        .payment-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .payment-amount {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--success-green);
+            margin: 15px 0;
+        }
+
+        .payment-desc {
+            color: var(--gold-light);
+            opacity: 0.8;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .upi-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .upi-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.2s;
+        }
+
+        .upi-btn:active { transform: scale(0.98); }
+
+        .upi-btn.gpay { background: linear-gradient(135deg, #4285F4, #34A853); }
+        .upi-btn.phonepe { background: linear-gradient(135deg, #5f259f, #8b5cf6); }
+        .upi-btn.paytm { background: linear-gradient(135deg, #00BAF2, #0078D4); }
+        .upi-btn.all-upi { background: linear-gradient(135deg, #ff9800, #f57c00); }
+
+        .payment-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: var(--gold-light);
+            opacity: 0.5;
+            font-size: 0.8rem;
+        }
+
+        .payment-divider::before,
+        .payment-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .payment-divider span { padding: 0 15px; }
+
+        .qr-section {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .qr-section img { width: 160px; height: 160px; display: block; }
+
+        .upi-id-display {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.95rem;
+            color: var(--gold);
+        }
+
+        .verify-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--success-green), #388E3C);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            letter-spacing: 0.1em;
+        }
+
+        .verify-btn:active { transform: scale(0.98); }
+
+        .cancel-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 100, 100, 0.5);
+            border-radius: 10px;
+            color: #ff9999;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .payment-note {
+            font-size: 0.7rem;
+            color: var(--gold-light);
+            opacity: 0.5;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
         /* Results */
         .results-container {
             display: none;
@@ -721,13 +877,43 @@
         <p class="loading-subtext" id="loadingSubtext">Aligning celestial energies</p>
     </div>
 
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-card">
+            <div class="payment-icon">🔮</div>
+            <h2 class="payment-title">Complete Payment</h2>
+            <div class="payment-amount" id="paymentAmount">₹---</div>
+            <p class="payment-desc">Pay to receive your personalized astrology reading</p>
+
+            <div class="upi-buttons">
+                <a href="#" class="upi-btn gpay" id="gpayBtn">📱 Google Pay</a>
+                <a href="#" class="upi-btn phonepe" id="phonepeBtn">💜 PhonePe</a>
+                <a href="#" class="upi-btn paytm" id="paytmBtn">💙 Paytm</a>
+                <a href="#" class="upi-btn all-upi" id="allUpiBtn">🏦 Any UPI App</a>
+            </div>
+
+            <div class="payment-divider"><span>or scan QR</span></div>
+
+            <div class="qr-section">
+                <img id="qrCode" src="" alt="UPI QR Code">
+            </div>
+
+            <div class="upi-id-display" id="upiIdDisplay">Loading...</div>
+
+            <button class="verify-btn" id="verifyPaymentBtn">✓ I Have Completed Payment</button>
+            <button class="cancel-btn" id="cancelPaymentBtn">Cancel</button>
+
+            <p class="payment-note">🔒 Secure UPI Payment • Click verify after payment</p>
+        </div>
+    </div>
+
     <!-- Question Modal for Follow-up -->
     <div class="question-modal" id="questionModal">
         <div class="question-modal-content">
             <h3 class="modal-title">🔮 Ask Another Question</h3>
             <div class="question-tags" id="modalQuestionTags"></div>
             <textarea class="custom-question" id="modalCustomQuestion" placeholder="Or type your specific question..."></textarea>
-            <button class="oracle-button" id="modalSubmitBtn" style="margin-top: 15px;">Get Answer</button>
+            <button class="oracle-button" id="modalSubmitBtn" style="margin-top: 15px;">Pay & Get Answer</button>
             <button class="new-reading-btn" id="modalCloseBtn" style="margin-top: 10px;">Cancel</button>
         </div>
     </div>
@@ -879,6 +1065,7 @@
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         let selectedQuestions = [];
         let currentUserData = null;
+        let paymentData = null;
 
         // Language names mapping
         const languageNames = {
@@ -972,20 +1159,85 @@
             return texts[lang] || texts.english;
         }
 
-        // Form submission
+        // Fetch payment details from secure API
+        async function fetchPaymentDetails() {
+            try {
+                const res = await fetch('/api/payment');
+                const data = await res.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Payment setup failed');
+                }
+                
+                paymentData = data.data;
+                
+                // Update payment modal
+                document.getElementById('paymentAmount').textContent = '₹' + paymentData.amount;
+                document.getElementById('gpayBtn').href = paymentData.urls.gpay;
+                document.getElementById('phonepeBtn').href = paymentData.urls.phonepe;
+                document.getElementById('paytmBtn').href = paymentData.urls.paytm;
+                document.getElementById('allUpiBtn').href = paymentData.urls.upi;
+                document.getElementById('qrCode').src = paymentData.qrCode;
+                document.getElementById('upiIdDisplay').textContent = paymentData.displayUpiId;
+                
+                return true;
+            } catch (err) {
+                console.error('Payment fetch error:', err);
+                showToast('Payment system error');
+                return false;
+            }
+        }
+
+        // Form submission - show payment modal first
         document.getElementById('birthForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await submitReading();
-        });
-
-        async function submitReading(customQuestionOverride = null) {
+            
             const name = document.getElementById('birthName').value.trim();
             const birthDate = document.getElementById('birthDate').value;
             const birthTime = document.getElementById('birthTime').value;
             const birthPlace = document.getElementById('birthPlace').value.trim();
-            const language = document.getElementById('language').value;
-            const gender = document.getElementById('gender').value;
-            const customQuestion = customQuestionOverride || document.getElementById('customQuestion').value.trim();
+            
+            if (!name || !birthDate || !birthTime || !birthPlace) {
+                document.getElementById('errorMessage').textContent = 'Please fill all required fields';
+                document.getElementById('errorMessage').classList.add('active');
+                return;
+            }
+
+            // Store user data
+            currentUserData = {
+                name, birthDate, birthTime, birthPlace,
+                language: document.getElementById('language').value,
+                gender: document.getElementById('gender').value,
+                customQuestion: document.getElementById('customQuestion').value.trim()
+            };
+
+            // Fetch payment details and show modal
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Preparing...';
+            document.getElementById('loadingSubtext').textContent = '';
+            
+            const success = await fetchPaymentDetails();
+            document.getElementById('loadingOverlay').classList.remove('active');
+            
+            if (success) {
+                document.getElementById('paymentModal').classList.add('active');
+            }
+        });
+
+        // Cancel payment
+        document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
+            document.getElementById('paymentModal').classList.remove('active');
+        });
+
+        // Verify payment and get reading
+        document.getElementById('verifyPaymentBtn').addEventListener('click', async () => {
+            document.getElementById('paymentModal').classList.remove('active');
+            await submitReading();
+        });
+
+        async function submitReading(customQuestionOverride = null) {
+            const { name, birthDate, birthTime, birthPlace, language, gender } = currentUserData;
+            const customQuestion = customQuestionOverride || currentUserData.customQuestion;
 
             // Build question string
             let questionsText = '';
@@ -1012,9 +1264,6 @@
 
             document.getElementById('loadingOverlay').classList.add('active');
             document.body.style.overflow = 'hidden';
-
-            // Store user data for follow-up questions
-            currentUserData = { name, birthDate, birthTime, birthPlace, language, gender };
 
             try {
                 const response = await fetch('/api/reading', {
@@ -1115,7 +1364,7 @@
             document.getElementById('questionModal').classList.add('active');
         });
 
-        // Modal submit
+        // Modal submit - show payment first
         document.getElementById('modalSubmitBtn').addEventListener('click', async () => {
             const activeTag = document.querySelector('#modalQuestionTags .question-tag.active');
             const customQ = document.getElementById('modalCustomQuestion').value.trim();
@@ -1126,16 +1375,20 @@
                 selectedQuestions = [];
             }
 
-            if (currentUserData) {
-                document.getElementById('birthName').value = currentUserData.name;
-                document.getElementById('birthDate').value = currentUserData.birthDate;
-                document.getElementById('birthTime').value = currentUserData.birthTime;
-                document.getElementById('birthPlace').value = currentUserData.birthPlace;
-                document.getElementById('language').value = currentUserData.language;
-                document.getElementById('gender').value = currentUserData.gender;
+            currentUserData.customQuestion = customQ;
+            document.getElementById('questionModal').classList.remove('active');
+            
+            // Fetch payment and show modal
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingText').textContent = 'Preparing...';
+            document.getElementById('loadingSubtext').textContent = '';
+            
+            const success = await fetchPaymentDetails();
+            document.getElementById('loadingOverlay').classList.remove('active');
+            
+            if (success) {
+                document.getElementById('paymentModal').classList.add('active');
             }
-
-            await submitReading(customQ);
         });
 
         // Modal close

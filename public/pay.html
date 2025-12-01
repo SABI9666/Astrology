@@ -42,6 +42,7 @@
         margin: 20px 0;
         font-size: 0.9rem;
         color: #a5d6a7;
+        line-height: 1.6;
     }
     .btn {
         display: block;
@@ -49,20 +50,20 @@
         padding: 16px 25px;
         border-radius: 12px;
         font-weight: 600;
-        font-size: 1.05rem;
+        font-size: 1rem;
         cursor: pointer;
         text-decoration: none;
         text-align: center;
         margin: 12px 0;
         border: none;
     }
-    .btn-blue {
-        background: linear-gradient(135deg, #4285F4, #34A853);
-        color: #fff;
-    }
     .btn-green {
         background: linear-gradient(135deg, #25D366, #128C7E);
         color: #fff;
+    }
+    .btn-gold {
+        background: linear-gradient(135deg, #D4AF37, #c9a227);
+        color: #000;
     }
     .btn-outline {
         background: transparent;
@@ -71,96 +72,62 @@
         font-size: 0.9rem;
         padding: 12px;
     }
-    .hidden { display: none !important; }
 </style>
 </head>
 <body>
-    <div class="card" id="card">
-        <div class="icon" id="icon">💳</div>
-        <h2 id="title">Opening Payment App...</h2>
-        <div class="amount" id="amountDisplay">₹100</div>
+    <div class="card">
+        <div class="icon">💳</div>
+        <h2>Complete Your Payment</h2>
+        <div class="amount" id="amt">₹100</div>
         
-        <div class="info" id="info">
-            If the app opened, complete your payment there.<br>
-            Then come back and click the button below.
+        <div class="info">
+            ✅ Payment app should have opened<br><br>
+            Complete payment in the app, then return here and tap the button below.
         </div>
 
-        <button class="btn btn-green" id="doneBtn" onclick="goBack()">
-            ✅ I've Completed Payment
-        </button>
+        <a href="/" class="btn btn-green">✅ Payment Done → Continue</a>
         
-        <button class="btn btn-blue" id="retryBtn" onclick="openApp()">
-            🔄 Open Payment App Again
-        </button>
+        <a href="#" class="btn btn-gold" id="openBtn">🔄 Open Payment App Again</a>
         
-        <button class="btn btn-outline" onclick="goBack()">
-            ← Cancel & Go Back
-        </button>
+        <a href="/" class="btn btn-outline">← Cancel</a>
     </div>
 
 <script>
-    var upiUrl = null;
+(function() {
+    // Build UPI URL from params
+    var params = new URLSearchParams(window.location.search);
+    var baseUrl = params.get("url");
     
-    function goBack() {
-        // Go back to main page
-        if (document.referrer && document.referrer.includes(window.location.host)) {
-            window.history.back();
-        } else {
-            window.location.href = '/';
-        }
+    if (!baseUrl) {
+        document.querySelector('.card').innerHTML = '<div class="icon">⚠️</div><h2 style="color:#f44336">Invalid Link</h2><a href="/" class="btn btn-outline">← Go Home</a>';
+        return;
     }
     
-    function openApp() {
-        if (!upiUrl) return;
-        
-        // Method 1: Create hidden iframe (doesn't navigate away)
-        var iframe = document.createElement('iframe');
-        iframe.style.cssText = 'width:0;height:0;border:none;position:absolute;';
-        iframe.src = upiUrl;
-        document.body.appendChild(iframe);
-        
-        // Method 2: Also try direct open after delay as fallback
-        setTimeout(function() {
-            var link = document.createElement('a');
-            link.href = upiUrl;
-            link.click();
-        }, 500);
-    }
+    // Reconstruct full URL
+    var upiUrl = baseUrl;
+    if (params.get("pn")) upiUrl += "&pn=" + params.get("pn");
+    if (params.get("am")) upiUrl += "&am=" + params.get("am");
+    if (params.get("cu")) upiUrl += "&cu=" + params.get("cu");
     
-    // Parse URL params and build UPI URL
-    (function() {
-        var params = new URLSearchParams(window.location.search);
-        var baseUrl = params.get("url");
+    // Show amount
+    var am = params.get("am");
+    if (am) document.getElementById('amt').textContent = '₹' + am;
+    
+    // Set retry button
+    document.getElementById('openBtn').href = upiUrl;
+    
+    // Check if we already tried to open (prevents loop)
+    var key = 'upi_opened_' + window.location.search;
+    
+    if (!sessionStorage.getItem(key)) {
+        // First time - mark as opened and redirect
+        sessionStorage.setItem(key, '1');
         
-        if (!baseUrl) {
-            document.getElementById('icon').textContent = '⚠️';
-            document.getElementById('title').textContent = 'Invalid Link';
-            document.getElementById('title').style.color = '#f44336';
-            document.getElementById('amountDisplay').classList.add('hidden');
-            document.getElementById('info').textContent = 'Payment link is invalid or expired.';
-            document.getElementById('doneBtn').classList.add('hidden');
-            document.getElementById('retryBtn').classList.add('hidden');
-            return;
-        }
-        
-        // Reconstruct full UPI URL
-        upiUrl = baseUrl;
-        var pn = params.get("pn");
-        var am = params.get("am");
-        var cu = params.get("cu");
-        
-        if (pn) upiUrl += "&pn=" + pn;
-        if (am) upiUrl += "&am=" + am;
-        if (cu) upiUrl += "&cu=" + cu;
-        
-        // Show amount
-        if (am) {
-            document.getElementById('amountDisplay').textContent = '₹' + am;
-        }
-        
-        // Auto-open app using iframe method
-        setTimeout(openApp, 200);
-    })();
+        // Redirect to UPI app
+        window.location.href = upiUrl;
+    }
+    // If already opened, just show the page (don't redirect again)
+})();
 </script>
 </body>
 </html>

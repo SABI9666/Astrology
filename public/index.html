@@ -305,30 +305,6 @@
             line-height: 1.5;
         }
 
-        .steps {
-            text-align: left;
-            background: rgba(76,175,80,0.1);
-            border: 1px solid rgba(76,175,80,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 0.85rem;
-            line-height: 1.8;
-        }
-        .steps-title {
-            color: var(--green);
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .warning {
-            background: rgba(244,67,54,0.1);
-            border: 1px solid rgba(244,67,54,0.3);
-            border-radius: 10px;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 0.8rem;
-            color: #ff9999;
-        }
         .verify-btn {
             width: 100%;
             padding: 16px;
@@ -351,6 +327,15 @@
             font-size: 0.85rem;
             cursor: pointer;
             margin-top: 10px;
+        }
+        .warning {
+            background: rgba(244,67,54,0.1);
+            border: 1px solid rgba(244,67,54,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #ff9999;
         }
 
         /* Results */
@@ -457,7 +442,7 @@
         <div class="modal-card">
             <div class="modal-icon">🔮</div>
             <h2 class="modal-title">Complete Payment</h2>
-            <div class="amount" id="amount">₹100</div>
+            <div class="amount" id="amount">₹100.00</div>
 
             <div class="upi-buttons">
                 <button class="upi-btn gpay" id="gpayBtn">
@@ -487,14 +472,14 @@
             </div>
 
             <p class="manual-steps">
-                Open any UPI app → Pay to UPI ID → Enter ₹<span id="amountText">100</span> → Complete payment
+                Open any UPI app → Pay to UPI ID → Enter Exact ₹<span id="amountText">100.00</span>
             </p>
 
             <div class="warning">
-                ⚠️ Click verify only after payment is complete
+                ⚠️ Click verify ONLY after payment is successful
             </div>
 
-            <button class="verify-btn" id="verifyBtn">✓ I Have Paid - Verify Now</button>
+            <button class="verify-btn" id="verifyBtn">✓ I Have Paid - Verify & WhatsApp</button>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
         </div>
     </div>
@@ -590,17 +575,28 @@
                 <div class="reading" id="readingContent"></div>
 
                 <div class="action-btns">
-                    <button class="btn btn-outline" id="newBtn">✨ New Reading</button>
+                    <button class="btn btn-outline" id="newBtn">✨ New Question (Requires Payment)</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- LOGIC: Check for saved reading immediately on load ---
+        const savedReading = localStorage.getItem('celestialReading');
+        if (savedReading) {
+            try {
+                const d = JSON.parse(savedReading);
+                showResults(d);
+            } catch (e) {
+                localStorage.removeItem('celestialReading');
+            }
+        }
+
         let selectedTags = [];
         let userData = null;
         let paymentToken = null;
-        let gpayUrls = []; // Store all GPay URL formats
+        let gpayUrls = []; 
 
         const questionMap = {
             marriage: "Marriage predictions - when will I marry, partner details",
@@ -643,57 +639,38 @@
             };
         });
 
-        // Handle UPI button clicks with fallback
+        // Handle standard UPI buttons
         document.querySelectorAll('.upi-btn').forEach(btn => {
             btn.onclick = function(e) {
-                // Skip if this is the GPay button as it has its own handler
                 if (this.id === 'gpayBtn') return;
-                
                 const href = this.href;
                 if (!href || href === '#') {
                     e.preventDefault();
                     return;
                 }
-                
-                // Try to open the app
                 const startTime = Date.now();
-                
-                // If app doesn't open within 1.5 seconds, show toast
                 setTimeout(() => {
-                    if (Date.now() - startTime < 2000) {
-                        showToast('Opening payment app...');
-                    }
+                    if (Date.now() - startTime < 2000) showToast('Opening payment app...');
                 }, 100);
             };
         });
 
-        // GPay button - Updated for Reliability
+        // Reliable GPay Handler
         document.getElementById('gpayBtn').onclick = function(e) {
             e.preventDefault();
-            
             if (gpayUrls.length === 0) {
                 showToast('Payment not ready. Please wait.');
                 return;
             }
-
             showToast('Opening Google Pay...');
-            
-            // On mobile, direct window location is safer than iframes for intents
-            // This prevents "Limit Exceeded" errors caused by security flags on hidden iframes
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
             if (isMobile) {
-                // Use the standard UPI intent first (gpayUrls[0])
                 window.location.href = gpayUrls[0];
-                
-                // Fallback check
                 setTimeout(() => {
-                    if (document.hasFocus()) {
-                         showToast('If GPay did not open, try the "Other UPI Apps" button.');
-                    }
+                    if (document.hasFocus()) showToast('If GPay did not open, try "Other UPI Apps"');
                 }, 2500);
             } else {
-                showToast('Please use a mobile device to pay via App');
+                showToast('Please use a mobile device');
             }
         };
 
@@ -715,6 +692,14 @@
         document.getElementById('mainForm').onsubmit = async function(e) {
             e.preventDefault();
 
+            // Check if there is already a saved reading
+            if (localStorage.getItem('celestialReading')) {
+                if (!confirm("You have a saved reading. Starting a new one requires new payment. Continue?")) {
+                    return;
+                }
+                localStorage.removeItem('celestialReading');
+            }
+
             const name = document.getElementById('name').value.trim();
             const dob = document.getElementById('dob').value;
             const tob = document.getElementById('tob').value;
@@ -732,7 +717,6 @@
                 customQ: document.getElementById('customQ').value.trim()
             };
 
-            // Get payment details
             document.getElementById('loading').classList.add('active');
             document.getElementById('loadingText').textContent = 'Preparing payment...';
 
@@ -747,11 +731,9 @@
                 document.getElementById('amountText').textContent = data.data.amount;
                 document.getElementById('upiId').textContent = data.data.upiId;
                 
-                // Store GPay URLs for fallback
                 const urls = data.data.urls;
                 gpayUrls = [urls.gpay1, urls.gpay2, urls.gpay3];
                 
-                // Set other UPI app buttons
                 document.getElementById('phonepeBtn').href = urls.phonepe;
                 document.getElementById('paytmBtn').href = urls.paytm;
                 document.getElementById('allUpiBtn').href = urls.upi;
@@ -770,7 +752,7 @@
             const upiId = document.getElementById('upiId').textContent;
             navigator.clipboard.writeText(upiId).then(() => {
                 this.textContent = '✓ Copied!';
-                showToast('UPI ID copied! Now open your UPI app');
+                showToast('UPI ID copied!');
                 setTimeout(() => this.textContent = '📋 Copy UPI ID', 2000);
             });
         };
@@ -781,7 +763,7 @@
             paymentToken = null;
         };
 
-        // Verify payment
+        // --- VERIFY + WHATSAPP LOGIC ---
         document.getElementById('verifyBtn').onclick = async function() {
             if (!paymentToken) {
                 showToast('Payment session expired. Try again.');
@@ -791,9 +773,8 @@
 
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('loading').classList.add('active');
-            document.getElementById('loadingText').textContent = 'Verifying payment...';
+            document.getElementById('loadingText').textContent = 'Verifying & Generating Reading...';
 
-            // Build questions
             let questions = selectedTags.map(t => questionMap[t] || '').join(' ');
             if (userData.customQ) questions += ' ' + userData.customQ;
             if (!questions) questions = 'Complete life reading';
@@ -815,27 +796,21 @@
                     throw new Error(result.message || 'Payment verification failed');
                 }
 
-                // Success - show reading
-                const d = result.data;
+                // 1. Send WhatsApp Message (in background/new tab)
+                const waMessage = `I have paid for Astrological Reading.\nName: ${userData.name}\nToken: ${paymentToken}`;
+                const waUrl = `https://wa.me/917907691760?text=${encodeURIComponent(waMessage)}`;
+                
+                // Open WhatsApp immediately
+                window.open(waUrl, '_blank');
 
-                document.getElementById('zodiacIcon').textContent = d.zodiac.symbol;
-                document.getElementById('sunSign').textContent = d.zodiac.name;
-                document.getElementById('elementBadge').textContent = d.zodiac.element;
-                document.getElementById('pathBadge').textContent = 'Life Path ' + d.lifePathNumber;
-                document.getElementById('birthDetails').innerHTML = 
-                    `<strong>${d.name}</strong><br>${d.birthDate} at ${d.birthTime}<br>${d.birthPlace}`;
+                // 2. Save result to LocalStorage for "Anytime" access
+                const dataToSave = result.data;
+                localStorage.setItem('celestialReading', JSON.stringify(dataToSave));
 
-                let html = d.reading
-                    .replace(/\*\*([^*]+)\*\*/g, '<div class="section-title">$1</div>')
-                    .replace(/\n\n/g, '</p><p>')
-                    .replace(/\n/g, '<br>');
-                document.getElementById('readingContent').innerHTML = '<p>' + html + '</p>';
+                // 3. Show Results
+                showResults(dataToSave);
 
-                document.getElementById('inputCard').style.display = 'none';
-                document.getElementById('results').classList.add('active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                paymentToken = null; // Clear used token
+                paymentToken = null; 
 
             } catch (err) {
                 showError(err.message || 'Verification failed. Please try again.');
@@ -844,8 +819,33 @@
             }
         };
 
-        // New reading
+        // Helper to render results
+        function showResults(d) {
+            document.getElementById('zodiacIcon').textContent = d.zodiac.symbol;
+            document.getElementById('sunSign').textContent = d.zodiac.name;
+            document.getElementById('elementBadge').textContent = d.zodiac.element;
+            document.getElementById('pathBadge').textContent = 'Life Path ' + d.lifePathNumber;
+            document.getElementById('birthDetails').innerHTML = 
+                `<strong>${d.name}</strong><br>${d.birthDate} at ${d.birthTime}<br>${d.birthPlace}`;
+
+            let html = d.reading
+                .replace(/\*\*([^*]+)\*\*/g, '<div class="section-title">$1</div>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            document.getElementById('readingContent').innerHTML = '<p>' + html + '</p>';
+
+            document.getElementById('inputCard').style.display = 'none';
+            document.getElementById('results').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // New reading - CLEARS SAVED DATA
         document.getElementById('newBtn').onclick = function() {
+            // Confirm reset
+            if(!confirm("This will clear your current reading and require a new payment. Continue?")) return;
+
+            localStorage.removeItem('celestialReading'); // Clear storage
+            
             document.getElementById('results').classList.remove('active');
             document.getElementById('inputCard').style.display = 'block';
             document.getElementById('mainForm').reset();

@@ -1,5 +1,4 @@
-// Payment API - Fixed UPI URL formatting
-const crypto = require('crypto');
+// Payment API - Fixed UPI amount format for GPay
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,49 +15,34 @@ export default function handler(req, res) {
     const upiId = process.env.UPI_ID;
     const upiName = process.env.UPI_NAME || 'Celestial Oracle';
     
-    // Get amount and ensure proper format
-    let rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = parseFloat(rawAmount).toFixed(2);
+    // Get amount - keep as simple number string
+    const rawAmount = process.env.PAYMENT_AMOUNT || '100';
+    const amount = parseFloat(rawAmount).toString(); // "100" not "100.00"
 
     if (!upiId || !upiId.includes('@')) {
         return res.status(500).json({ success: false, message: 'Payment not configured' });
     }
 
-    // Generate unique transaction reference
-    const txnRef = 'CO' + Date.now().toString(36).toUpperCase();
+    // Clean payee name - only alphanumeric and spaces
+    const cleanName = upiName.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 20);
+
+    // Build UPI URL manually - GPay is very specific about format
+    // Format: upi://pay?pa=UPI_ID&pn=NAME&am=AMOUNT&cu=INR
+    const upiBase = `pa=${upiId}&pn=${encodeURIComponent(cleanName)}&am=${amount}&cu=INR`;
     
-    // FIXED: Proper UPI URL format
-    // Key fixes:
-    // 1. Use simple encoding
-    // 2. Amount without quotes
-    // 3. Proper parameter order
-    // 4. No special characters in transaction note
-    
-    const params = new URLSearchParams();
-    params.append('pa', upiId);                    // Payee address (UPI ID)
-    params.append('pn', upiName.replace(/[^a-zA-Z0-9 ]/g, '')); // Payee name (alphanumeric only)
-    params.append('am', amount);                   // Amount
-    params.append('cu', 'INR');                    // Currency
-    params.append('tn', 'Astrology Reading');      // Transaction note (simple text)
-    
-    const upiString = params.toString();
-    
-    // Different URL schemes for different apps
+    // Different URL schemes
     const urls = {
-        // Standard UPI intent (works with most apps)
-        upi: `upi://pay?${upiString}`,
+        // Standard UPI intent
+        upi: `upi://pay?${upiBase}`,
         
-        // Google Pay specific
-        gpay: `tez://upi/pay?${upiString}`,
+        // Google Pay (tez scheme works best)
+        gpay: `tez://upi/pay?${upiBase}`,
         
         // PhonePe
-        phonepe: `phonepe://pay?${upiString}`,
+        phonepe: `phonepe://pay?${upiBase}`,
         
         // Paytm
-        paytm: `paytmmp://pay?${upiString}`,
-        
-        // BHIM
-        bhim: `upi://pay?${upiString}`
+        paytm: `paytmmp://pay?${upiBase}`
     };
 
     return res.status(200).json({
@@ -66,11 +50,8 @@ export default function handler(req, res) {
         data: {
             amount: amount,
             upiId: upiId,
-            upiName: upiName,
-            txnRef: txnRef,
-            urls: urls,
-            // Also provide raw params for debugging
-            rawParams: upiString
+            upiName: cleanName,
+            urls: urls
         }
     });
 }

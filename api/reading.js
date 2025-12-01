@@ -1,4 +1,9 @@
-// Secure Reading API - Requires valid payment token
+// Secure Reading API - Requires APPROVED verification
+
+// Access the shared pending verifications store
+if (!global.pendingVerifications) {
+    global.pendingVerifications = new Map();
+}
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,30 +17,50 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { name, birthDate, birthTime, birthPlace, language, gender, questions, paymentToken } = req.body;
+        const { verificationId } = req.body;
 
-        // SECURITY: Verify payment token first
-        if (!paymentToken) {
-            return res.status(401).json({ success: false, message: 'Payment required' });
+        // SECURITY: Verify approval status
+        if (!verificationId) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Verification ID required' 
+            });
         }
 
-        // Verify token with payment API
-        const tokenVerify = await fetch(`https://${req.headers.host}/api/payment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: paymentToken })
-        });
+        const verification = global.pendingVerifications.get(verificationId);
 
-        const tokenResult = await tokenVerify.json();
-        
-        if (!tokenResult.success || !tokenResult.valid) {
-            return res.status(401).json({ success: false, message: 'Invalid payment. Please pay first.' });
+        if (!verification) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Verification not found or expired. Please start again.' 
+            });
         }
 
-        // Validate required inputs
-        if (!name || !birthDate || !birthTime || !birthPlace) {
-            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        if (verification.status === 'pending') {
+            return res.status(403).json({ 
+                success: false, 
+                status: 'pending',
+                message: 'Payment not yet approved. Please wait for admin approval.' 
+            });
         }
+
+        if (verification.status === 'rejected') {
+            return res.status(403).json({ 
+                success: false, 
+                status: 'rejected',
+                message: 'Payment was rejected. Please contact support.' 
+            });
+        }
+
+        if (verification.status !== 'approved') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Invalid verification status' 
+            });
+        }
+
+        // Get user data from verification
+        const { name, birthDate, birthTime, birthPlace, language, gender, questions } = verification.userData;
 
         // Sanitize inputs
         const sanitize = (str, maxLen = 100) => {
@@ -53,7 +78,7 @@ export default async function handler(req, res) {
 
         // Validate date/time format
         if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || !/^\d{2}:\d{2}$/.test(birthTime)) {
-            return res.status(400).json({ success: false, message: 'Invalid date or time' });
+            return res.status(400).json({ success: false, message: 'Invalid date or time format' });
         }
 
         // Calculate zodiac
@@ -103,7 +128,7 @@ export default async function handler(req, res) {
         // Language prompts
         const langPrompts = {
             english: 'Respond in English.',
-            hindi: 'Respond in Hindi (हिंदी में).',
+            hindi: 'Respond in Hindi (हिन्दी में).',
             tamil: 'Respond in Tamil (தமிழில்).',
             telugu: 'Respond in Telugu (తెలుగులో).',
             malayalam: 'Respond in Malayalam (മലയാളത്തിൽ).',
@@ -154,6 +179,11 @@ Give specific predictions with timeframes. Use **Section Title** format.`;
         if (!reading) {
             return res.status(500).json({ success: false, message: 'No reading generated' });
         }
+
+        // Mark verification as used (optional - can allow multiple reads)
+        verification.status = 'completed';
+        verification.completedAt = Date.now();
+        global.pendingVerifications.set(verificationId, verification);
 
         return res.status(200).json({
             success: true,

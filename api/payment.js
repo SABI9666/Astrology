@@ -11,13 +11,15 @@ export default function handler(req, res) {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
 
+    // 1. Load exact details from Environment
     const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'COS 5'; // Default name is required
-    
+    const upiName = process.env.UPI_NAME || 'Pradeeksha Technologies'; // Default from image
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = Math.floor(parseFloat(rawAmount)).toString(); // Ensure no decimals for simple UPI
+    
+    // Ensure amount is formatted correctly (e.g. "100.00")
+    const amount = parseFloat(rawAmount).toFixed(2);
 
-    if (!upiId || !upiId.includes('@')) {
+    if (!upiId) {
         return res.status(500).json({ success: false, message: 'Payment not configured' });
     }
 
@@ -25,8 +27,12 @@ export default function handler(req, res) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // UPDATED: Added 'pn' (Payee Name) to the URL parameters
-    const payUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + 
+    // 2. Build the redirect URL with all necessary parameters for GPay
+    // pa = Payment Address (UPI ID)
+    // pn = Payee Name (Required for GPay)
+    // am = Amount
+    const payUrl = baseUrl + '/pay.html' + 
+                   '?pa=' + encodeURIComponent(upiId) + 
                    '&pn=' + encodeURIComponent(upiName) + 
                    '&am=' + amount;
 

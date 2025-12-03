@@ -1,4 +1,4 @@
-// fileName: api/payment.js
+// api/payment.js - NO pn parameter (fixes GPay "payment limit exceeded" error)
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,12 +11,11 @@ export default function handler(req, res) {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
 
-    // 1. Load exact details from Environment
-    const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'COS 5'; // Default from image
+    // Load from Environment
+    const upiId = process.env.UPI_ID;  // pradeeksha798-1@okhdfcbank
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
     
-    // Ensure amount is formatted correctly (e.g. "100.00")
+    // Format amount
     const amount = parseFloat(rawAmount).toFixed(2);
 
     if (!upiId) {
@@ -27,13 +26,9 @@ export default function handler(req, res) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // 2. Build the redirect URL with all necessary parameters for GPay
-    // pa = Payment Address (UPI ID)
-    // pn = Payee Name (Required for GPay)
-    // am = Amount
+    // Build URL with ONLY pa and am - NO pn parameter
     const payUrl = baseUrl + '/pay.html' + 
                    '?pa=' + encodeURIComponent(upiId) + 
-                   '&pn=' + encodeURIComponent(upiName) + 
                    '&am=' + amount;
 
     return res.status(200).json({
@@ -41,7 +36,6 @@ export default function handler(req, res) {
         data: {
             amount: amount,
             upiId: upiId,
-            upiName: upiName,
             urls: {
                 upi: payUrl,
                 gpay: payUrl,
@@ -51,3 +45,19 @@ export default function handler(req, res) {
         }
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

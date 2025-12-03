@@ -6,10 +6,9 @@
     <meta name="theme-color" content="#0d0618">
     <title>Celestial Oracle | ज्योतिष</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        :root { --gold: #D4AF37; --gold-light: #F4E4BC; --midnight: #0d0618; --purple: #1a0a2e; --violet: #7b5ea7; --white: #f8f4ff; --green: #4CAF50; --whatsapp: #25D366; }
+        :root { --gold: #D4AF37; --gold-light: #F4E4BC; --midnight: #0d0618; --purple: #1a0a2e; --violet: #7b5ea7; --white: #f8f4ff; --green: #4CAF50; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans', sans-serif; background: var(--midnight); color: var(--white); min-height: 100vh; }
         .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
@@ -22,40 +21,94 @@
         .card { background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,6,24,0.98)); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 25px 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); }
         .form-group { margin-bottom: 16px; }
         .form-label { display: block; font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
-        .form-input, .form-select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 16px; }
-        .form-select option { background: var(--purple); }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
+        .form-input, .form-select { 
+            width: 100%; 
+            padding: 14px 12px; 
+            background: rgba(255,255,255,0.08); 
+            border: 1px solid rgba(212,175,55,0.25); 
+            border-radius: 10px; 
+            color: var(--white); 
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        /* Mobile-friendly date/time inputs */
+        input[type="date"], input[type="time"] {
+            min-height: 50px;
+            font-size: 16px;
+            padding: 12px;
+            color-scheme: dark;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .form-select { 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23D4AF37' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+        .form-select option { background: var(--purple); color: white; }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,0.12); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .tag { padding: 8px 12px; background: rgba(123,94,167,0.15); border: 1px solid rgba(123,94,167,0.3); border-radius: 20px; color: var(--violet); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
-        .tag.active { background: var(--violet); color: white; }
-        textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 15px; min-height: 60px; resize: vertical; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-family: 'Cinzel', serif; font-size: 0.95rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s; }
+        .tag { padding: 10px 14px; background: rgba(123,94,167,0.15); border: 1px solid rgba(123,94,167,0.3); border-radius: 20px; color: var(--violet); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .tag.active { background: var(--violet); color: white; border-color: var(--violet); }
+        textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 16px; min-height: 70px; resize: vertical; }
+        textarea:focus { outline: none; border-color: var(--gold); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-family: 'Cinzel', serif; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s, opacity 0.2s; }
         .btn:active { transform: scale(0.98); }
         .btn-gold { background: linear-gradient(135deg, var(--gold), #c9a227); color: var(--midnight); font-weight: 600; }
+        .btn-gold:hover { opacity: 0.9; }
+        
+        /* Loading */
         .loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.97); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
         .loading.active { display: flex; }
         .spinner { width: 60px; height: 60px; border: 3px solid rgba(212,175,55,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading p { margin-top: 20px; color: var(--gold); font-family: 'Cinzel', serif; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.98); z-index: 200; justify-content: center; align-items: center; padding: 20px; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.98); z-index: 200; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
         .modal.active { display: flex; }
-        .modal-card { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,6,24,0.99)); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; padding: 30px 25px; max-width: 400px; width: 100%; text-align: center; }
-        .modal-icon { font-size: 3rem; margin-bottom: 10px; }
-        .modal-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem; margin-bottom: 5px; }
-        .amount { font-size: 2.5rem; font-weight: 700; color: var(--green); margin: 15px 0; }
-        .info-box { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 10px; padding: 15px; margin: 15px 0; font-size: 0.85rem; color: #a5d6a7; line-height: 1.6; }
-        .payment-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; margin: 10px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .payment-btn.razorpay { background: #2196F3; color: white; }
+        .modal-card { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,6,24,0.99)); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; padding: 30px 25px; max-width: 420px; width: 100%; text-align: center; }
+        .modal-icon { font-size: 3.5rem; margin-bottom: 15px; }
+        .modal-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.3rem; margin-bottom: 10px; }
+        .amount { font-size: 2.8rem; font-weight: 700; color: var(--green); margin: 15px 0; }
+        .info-box { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; font-size: 0.9rem; color: #a5d6a7; line-height: 1.7; text-align: left; }
+        .info-box.center { text-align: center; }
+        
+        /* Buttons */
+        .payment-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; margin: 10px 0; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s; }
+        .payment-btn.razorpay { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
         .payment-btn:active { transform: scale(0.98); }
-        .cancel-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(255,100,100,0.4); border-radius: 10px; color: #ff9999; font-size: 0.85rem; cursor: pointer; margin-top: 10px; }
-        .success-icon { font-size: 4rem; margin-bottom: 15px; }
+        .cancel-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid rgba(255,100,100,0.4); border-radius: 12px; color: #ff9999; font-size: 0.9rem; cursor: pointer; margin-top: 12px; }
+        .cancel-btn:hover { background: rgba(255,100,100,0.1); }
+        
+        .secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; font-size: 0.8rem; color: #888; }
+        
+        /* Success buttons */
+        .success-btn { display: block; width: 100%; padding: 16px; border-radius: 12px; font-weight: 600; font-size: 1rem; text-decoration: none; text-align: center; margin: 10px 0; transition: transform 0.2s; }
+        .success-btn:active { transform: scale(0.98); }
+        .success-btn.primary { background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; }
+        .success-btn.secondary { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+        .success-btn.outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+        
+        /* Error */
         .error { background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 10px; padding: 12px; color: #ff9999; margin-top: 15px; display: none; text-align: center; }
         .error.active { display: block; }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26,10,46,0.95); border: 1px solid var(--gold); border-radius: 8px; padding: 10px 20px; color: var(--gold); z-index: 300; opacity: 0; transition: all 0.3s; }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26,10,46,0.95); border: 1px solid var(--gold); border-radius: 10px; padding: 12px 24px; color: var(--gold); z-index: 300; opacity: 0; transition: all 0.3s; }
         .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; font-size: 0.75rem; color: #888; }
-        .reading-link { display: block; padding: 16px; background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; margin: 15px 0; }
+        
+        /* Payment methods list */
+        .payment-methods { display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap; }
+        .payment-methods span { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
@@ -69,10 +122,15 @@
             <div class="modal-icon">🔮</div>
             <h2 class="modal-title">Complete Payment</h2>
             <div class="amount" id="amount">₹100</div>
-            <div class="info-box">
+            <div class="info-box center">
                 ✅ Secure payment via Razorpay<br>
                 ✅ GPay, PhonePe, UPI, Cards accepted<br>
                 ✅ Instant reading after payment
+            </div>
+            <div class="payment-methods">
+                <span>💳 Cards</span>
+                <span>📱 UPI</span>
+                <span>🏦 NetBanking</span>
             </div>
             <button class="payment-btn razorpay" id="payNowBtn">
                 💳 Pay Now - Secure Checkout
@@ -84,14 +142,23 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
+    <!-- Success Modal - Shows Reading Link -->
     <div class="modal" id="successModal">
         <div class="modal-card">
-            <div class="success-icon">✅</div>
+            <div class="modal-icon">✨</div>
             <h2 class="modal-title">Payment Successful!</h2>
-            <div class="info-box">Your personalized reading is ready!</div>
-            <a href="#" class="reading-link" id="readingLink">📖 View Your Reading</a>
-            <button class="cancel-btn" id="newRequestBtn">← Get Another Reading</button>
+            <div class="info-box center">
+                🎉 Your personalized Vedic astrology reading is ready!
+            </div>
+            <a href="#" class="success-btn primary" id="viewReadingBtn" target="_blank">
+                📖 View Your Reading
+            </a>
+            <a href="#" class="success-btn secondary" id="downloadPdfBtn" target="_blank">
+                📥 Download as PDF
+            </a>
+            <button class="success-btn outline" id="newReadingBtn">
+                🔮 Get Another Reading
+            </button>
         </div>
     </div>
 
@@ -118,11 +185,11 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Your Name</label>
-                    <input type="text" id="name" class="form-input" placeholder="Enter your name" required maxlength="50">
+                    <label class="form-label">👤 Your Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter your full name" required maxlength="50">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Gender</label>
+                    <label class="form-label">⚧ Gender</label>
                     <select id="gender" class="form-select">
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -131,20 +198,20 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Date of Birth</label>
+                        <label class="form-label">📅 Date of Birth</label>
                         <input type="date" id="dob" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Time of Birth</label>
+                        <label class="form-label">🕐 Time of Birth</label>
                         <input type="time" id="tob" class="form-input" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Place of Birth</label>
+                    <label class="form-label">📍 Place of Birth</label>
                     <input type="text" id="pob" class="form-input" placeholder="City, State, Country" required maxlength="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">What would you like to know?</label>
+                    <label class="form-label">❓ What would you like to know?</label>
                     <div class="tags">
                         <span class="tag" data-q="marriage">💍 Marriage</span>
                         <span class="tag" data-q="job">💼 Job</span>
@@ -169,6 +236,7 @@
 var selectedTags = [];
 var userData = null;
 var orderData = null;
+var readingUrl = null;
 var questionMap = { 
     marriage: "Marriage predictions", 
     job: "Job predictions", 
@@ -182,7 +250,7 @@ var questionMap = {
     business: "Business success" 
 };
 
-// Create stars
+// Create stars background
 (function() { 
     var c = document.getElementById('stars'); 
     for (var i = 0; i < 80; i++) { 
@@ -195,9 +263,16 @@ var questionMap = {
     } 
 })();
 
-document.getElementById('dob').max = new Date().toISOString().split('T')[0];
+// Set max date for DOB (today)
+var today = new Date();
+var maxDate = today.toISOString().split('T')[0];
+document.getElementById('dob').max = maxDate;
 
-// Tags
+// Set min date (150 years ago)
+var minDate = new Date(today.getFullYear() - 150, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+document.getElementById('dob').min = minDate;
+
+// Tags selection
 document.querySelectorAll('.tag').forEach(function(tag) {
     tag.onclick = function() {
         this.classList.toggle('active');
@@ -243,8 +318,15 @@ document.getElementById('mainForm').onsubmit = function(e) {
     var pob = document.getElementById('pob').value.trim();
     
     if (!name || !dob || !tob || !pob) { 
-        showError('Please fill all fields'); 
+        showError('Please fill all required fields'); 
         return; 
+    }
+
+    // Validate date
+    var dobDate = new Date(dob);
+    if (isNaN(dobDate.getTime()) || dobDate > today) {
+        showError('Please enter a valid date of birth');
+        return;
     }
 
     var questions = selectedTags.map(function(t) { return questionMap[t] || ''; }).join(', ');
@@ -285,9 +367,11 @@ document.getElementById('mainForm').onsubmit = function(e) {
     });
 };
 
-// Pay Now button - Open Razorpay
+// Pay Now button - Open Razorpay checkout
 document.getElementById('payNowBtn').onclick = function() {
     if (!orderData) return;
+
+    document.getElementById('paymentModal').classList.remove('active');
 
     var options = {
         key: orderData.keyId,
@@ -304,8 +388,7 @@ document.getElementById('payNowBtn').onclick = function() {
         },
         handler: function(response) {
             // Payment successful - verify and get reading
-            document.getElementById('paymentModal').classList.remove('active');
-            showLoading('Verifying payment & generating reading...');
+            showLoading('Generating your reading...');
 
             fetch('/api/verify-payment', {
                 method: 'POST',
@@ -322,18 +405,25 @@ document.getElementById('payNowBtn').onclick = function() {
                 hideLoading();
                 if (!data.success) throw new Error(data.message);
                 
-                // Show success modal with reading link
-                document.getElementById('readingLink').href = data.data.readingUrl;
+                // Store reading URL
+                readingUrl = data.data.readingUrl;
+                
+                // Set button links
+                document.getElementById('viewReadingBtn').href = readingUrl;
+                document.getElementById('downloadPdfBtn').href = readingUrl + '&format=pdf';
+                
+                // Show success modal
                 document.getElementById('successModal').classList.add('active');
-                showToast('Payment successful!');
+                showToast('Payment successful! ✨');
             })
             .catch(function(err) {
                 hideLoading();
-                showError(err.message || 'Verification failed');
+                showError(err.message || 'Failed to generate reading. Please contact support.');
             });
         },
         modal: {
             ondismiss: function() {
+                document.getElementById('paymentModal').classList.add('active');
                 showToast('Payment cancelled');
             }
         }
@@ -348,14 +438,16 @@ document.getElementById('cancelBtn').onclick = function() {
     document.getElementById('paymentModal').classList.remove('active'); 
 };
 
-// New request button
-document.getElementById('newRequestBtn').onclick = function() {
+// New reading button
+document.getElementById('newReadingBtn').onclick = function() {
     document.getElementById('successModal').classList.remove('active');
     document.getElementById('mainForm').reset();
     selectedTags = [];
     document.querySelectorAll('.tag').forEach(function(t) { t.classList.remove('active'); });
     userData = null;
     orderData = null;
+    readingUrl = null;
+    showToast('Ready for new reading');
 };
 </script>
 </body>

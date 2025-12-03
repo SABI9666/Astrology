@@ -1,4 +1,4 @@
-// Payment API - Copy-paste UPI flow
+// fileName: api/payment.js
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,10 +12,10 @@ export default function handler(req, res) {
     }
 
     const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'Payment';
+    const upiName = process.env.UPI_NAME || 'COS 5'; // Default name is required
     
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = Math.floor(parseFloat(rawAmount)).toString();
+    const amount = Math.floor(parseFloat(rawAmount)).toString(); // Ensure no decimals for simple UPI
 
     if (!upiId || !upiId.includes('@')) {
         return res.status(500).json({ success: false, message: 'Payment not configured' });
@@ -25,8 +25,10 @@ export default function handler(req, res) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // All buttons go to the copy-paste page
-    const payUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + '&am=' + amount;
+    // UPDATED: Added 'pn' (Payee Name) to the URL parameters
+    const payUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + 
+                   '&pn=' + encodeURIComponent(upiName) + 
+                   '&am=' + amount;
 
     return res.status(200).json({
         success: true,
@@ -43,13 +45,3 @@ export default function handler(req, res) {
         }
     });
 }
-
-
-
-
-
-
-
-
-
-

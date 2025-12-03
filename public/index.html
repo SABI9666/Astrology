@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#0d0618">
     <title>Celestial Oracle | ज्योतिष</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root { --gold: #D4AF37; --gold-light: #F4E4BC; --midnight: #0d0618; --purple: #1a0a2e; --violet: #7b5ea7; --white: #f8f4ff; --green: #4CAF50; --whatsapp: #25D366; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,10 +27,10 @@
         .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .tag { padding: 8px 12px; background: rgba(123,94,167,0.15); border: 1px solid rgba(123,94,167,0.3); border-radius: 20px; color: var(--violet); font-size: 0.8rem; cursor: pointer; }
+        .tag { padding: 8px 12px; background: rgba(123,94,167,0.15); border: 1px solid rgba(123,94,167,0.3); border-radius: 20px; color: var(--violet); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
         .tag.active { background: var(--violet); color: white; }
         textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); border-radius: 10px; color: var(--white); font-size: 15px; min-height: 60px; resize: vertical; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-family: 'Cinzel', serif; font-size: 0.95rem; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-family: 'Cinzel', serif; font-size: 0.95rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s; }
         .btn:active { transform: scale(0.98); }
         .btn-gold { background: linear-gradient(135deg, var(--gold), #c9a227); color: var(--midnight); font-weight: 600; }
         .loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,6,24,0.97); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
@@ -42,18 +44,18 @@
         .modal-icon { font-size: 3rem; margin-bottom: 10px; }
         .modal-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem; margin-bottom: 5px; }
         .amount { font-size: 2.5rem; font-weight: 700; color: var(--green); margin: 15px 0; }
-        .info-box { background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.3); border-radius: 10px; padding: 15px; margin: 15px 0; font-size: 0.85rem; color: #a5d6a7; line-height: 1.6; }
-        .verify-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--gold), #c9a227); border: none; border-radius: 10px; color: #000; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: block; text-align: center; }
+        .info-box { background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 10px; padding: 15px; margin: 15px 0; font-size: 0.85rem; color: #a5d6a7; line-height: 1.6; }
+        .payment-btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; margin: 10px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .payment-btn.razorpay { background: #2196F3; color: white; }
+        .payment-btn:active { transform: scale(0.98); }
         .cancel-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(255,100,100,0.4); border-radius: 10px; color: #ff9999; font-size: 0.85rem; cursor: pointer; margin-top: 10px; }
         .success-icon { font-size: 4rem; margin-bottom: 15px; }
-        .steps-list { text-align: left; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin: 20px 0; }
-        .step { display: flex; gap: 12px; margin: 12px 0; align-items: flex-start; }
-        .step-num { width: 28px; height: 28px; background: var(--gold); color: var(--midnight); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-        .step-text { font-size: 0.9rem; line-height: 1.5; }
         .error { background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.5); border-radius: 10px; padding: 12px; color: #ff9999; margin-top: 15px; display: none; text-align: center; }
         .error.active { display: block; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26,10,46,0.95); border: 1px solid var(--gold); border-radius: 8px; padding: 10px 20px; color: var(--gold); z-index: 300; opacity: 0; transition: all 0.3s; }
         .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .secure-badge { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; font-size: 0.75rem; color: #888; }
+        .reading-link { display: block; padding: 16px; background: linear-gradient(135deg, #4CAF50, #388E3C); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -67,8 +69,17 @@
             <div class="modal-icon">🔮</div>
             <h2 class="modal-title">Complete Payment</h2>
             <div class="amount" id="amount">₹100</div>
-            <div class="info-box">Pay via any UPI app (GPay, PhonePe, Paytm)<br>UPI ID will be copied automatically!</div>
-            <a href="#" class="verify-btn" id="payNowBtn">💳 Proceed to Pay</a>
+            <div class="info-box">
+                ✅ Secure payment via Razorpay<br>
+                ✅ GPay, PhonePe, UPI, Cards accepted<br>
+                ✅ Instant reading after payment
+            </div>
+            <button class="payment-btn razorpay" id="payNowBtn">
+                💳 Pay Now - Secure Checkout
+            </button>
+            <div class="secure-badge">
+                🔒 Secured by Razorpay
+            </div>
             <button class="cancel-btn" id="cancelBtn">Cancel</button>
         </div>
     </div>
@@ -77,15 +88,10 @@
     <div class="modal" id="successModal">
         <div class="modal-card">
             <div class="success-icon">✅</div>
-            <h2 class="modal-title">Request Sent!</h2>
-            <div class="info-box">Your verification request has been sent via WhatsApp!</div>
-            <div class="steps-list">
-                <div class="step"><span class="step-num">1</span><span class="step-text">Make sure you <strong>send</strong> the WhatsApp message</span></div>
-                <div class="step"><span class="step-num">2</span><span class="step-text">Admin will verify your payment</span></div>
-                <div class="step"><span class="step-num">3</span><span class="step-text">You'll receive <strong>reading link + PDF</strong> on WhatsApp</span></div>
-            </div>
-            <button class="verify-btn" id="resendBtn" style="background: linear-gradient(135deg, #25D366, #128C7E); color: #fff;">📱 Resend WhatsApp Message</button>
-            <button class="cancel-btn" id="newRequestBtn">← Start New Request</button>
+            <h2 class="modal-title">Payment Successful!</h2>
+            <div class="info-box">Your personalized reading is ready!</div>
+            <a href="#" class="reading-link" id="readingLink">📖 View Your Reading</a>
+            <button class="cancel-btn" id="newRequestBtn">← Get Another Reading</button>
         </div>
     </div>
 
@@ -138,22 +144,22 @@
                     <input type="text" id="pob" class="form-input" placeholder="City, State, Country" required maxlength="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">🔮 What do you want to know?</label>
-                    <div class="tags" id="tags">
+                    <label class="form-label">What would you like to know?</label>
+                    <div class="tags">
                         <span class="tag" data-q="marriage">💍 Marriage</span>
                         <span class="tag" data-q="job">💼 Job</span>
                         <span class="tag" data-q="career">📈 Career</span>
                         <span class="tag" data-q="wealth">💰 Wealth</span>
-                        <span class="tag" data-q="health">🏥 Health</span>
-                        <span class="tag" data-q="love">❤️ Love</span>
+                        <span class="tag" data-q="health">❤️ Health</span>
+                        <span class="tag" data-q="love">💕 Love</span>
                         <span class="tag" data-q="education">📚 Education</span>
                         <span class="tag" data-q="children">👶 Children</span>
                         <span class="tag" data-q="foreign">✈️ Foreign</span>
-                        <span class="tag" data-q="business">🏪 Business</span>
+                        <span class="tag" data-q="business">🏢 Business</span>
                     </div>
-                    <textarea id="customQ" placeholder="Or type your specific question..."></textarea>
+                    <textarea id="customQ" placeholder="Any specific questions? (optional)" maxlength="300"></textarea>
                 </div>
-                <button type="submit" class="btn btn-gold">🔮 Get My Reading</button>
+                <button type="submit" class="btn btn-gold">🔮 Get My Reading - ₹100</button>
                 <div class="error" id="error"></div>
             </form>
         </div>
@@ -161,11 +167,33 @@
 
 <script>
 var selectedTags = [];
-var whatsappUrl = null;
-var questionMap = { marriage: "Marriage predictions", job: "Job predictions", career: "Career growth", wealth: "Wealth prospects", health: "Health predictions", love: "Love life", education: "Education success", children: "Children predictions", foreign: "Foreign travel", business: "Business success" };
+var userData = null;
+var orderData = null;
+var questionMap = { 
+    marriage: "Marriage predictions", 
+    job: "Job predictions", 
+    career: "Career growth", 
+    wealth: "Wealth prospects", 
+    health: "Health predictions", 
+    love: "Love life", 
+    education: "Education success", 
+    children: "Children predictions", 
+    foreign: "Foreign travel", 
+    business: "Business success" 
+};
 
-// Stars
-(function() { var c = document.getElementById('stars'); for (var i = 0; i < 80; i++) { var s = document.createElement('div'); s.className = 'star'; s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%'; s.style.animationDelay = Math.random() * 3 + 's'; c.appendChild(s); } })();
+// Create stars
+(function() { 
+    var c = document.getElementById('stars'); 
+    for (var i = 0; i < 80; i++) { 
+        var s = document.createElement('div'); 
+        s.className = 'star'; 
+        s.style.left = Math.random() * 100 + '%'; 
+        s.style.top = Math.random() * 100 + '%'; 
+        s.style.animationDelay = Math.random() * 3 + 's'; 
+        c.appendChild(s); 
+    } 
+})();
 
 document.getElementById('dob').max = new Date().toISOString().split('T')[0];
 
@@ -174,106 +202,170 @@ document.querySelectorAll('.tag').forEach(function(tag) {
     tag.onclick = function() {
         this.classList.toggle('active');
         var q = this.dataset.q;
-        if (this.classList.contains('active')) { if (selectedTags.indexOf(q) === -1) selectedTags.push(q); }
-        else { selectedTags = selectedTags.filter(function(t) { return t !== q; }); }
+        if (this.classList.contains('active')) { 
+            if (selectedTags.indexOf(q) === -1) selectedTags.push(q); 
+        } else { 
+            selectedTags = selectedTags.filter(function(t) { return t !== q; }); 
+        }
     };
 });
 
-function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('active'); setTimeout(function() { t.classList.remove('active'); }, 3000); }
-function showError(msg) { var e = document.getElementById('error'); e.textContent = msg; e.classList.add('active'); setTimeout(function() { e.classList.remove('active'); }, 5000); }
-
-// Check if returning from payment
-(function() {
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('verify') === '1') {
-        // Clear URL
-        window.history.replaceState({}, '', '/');
-        
-        // Get stored user data
-        var stored = sessionStorage.getItem('celestial_user');
-        if (stored) {
-            var userData = JSON.parse(stored);
-            sendVerification(userData);
-        } else {
-            showToast('Session expired. Please fill form again.');
-        }
-    }
-})();
-
-function sendVerification(userData) {
-    document.getElementById('loading').classList.add('active');
-    document.getElementById('loadingText').textContent = 'Sending to WhatsApp...';
-
-    fetch('/api/verify-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(result) {
-        if (!result.success) throw new Error(result.message || 'Failed');
-        whatsappUrl = result.data.whatsappUrl;
-        window.open(whatsappUrl, '_blank');
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('successModal').classList.add('active');
-        showToast('WhatsApp opened!');
-    })
-    .catch(function(err) {
-        document.getElementById('loading').classList.remove('active');
-        showError(err.message || 'Error');
-    });
+function showToast(msg) { 
+    var t = document.getElementById('toast'); 
+    t.textContent = msg; 
+    t.classList.add('active'); 
+    setTimeout(function() { t.classList.remove('active'); }, 3000); 
 }
 
-// Form submit
+function showError(msg) { 
+    var e = document.getElementById('error'); 
+    e.textContent = msg; 
+    e.classList.add('active'); 
+    setTimeout(function() { e.classList.remove('active'); }, 5000); 
+}
+
+function showLoading(text) {
+    document.getElementById('loadingText').textContent = text || 'Please wait...';
+    document.getElementById('loading').classList.add('active');
+}
+
+function hideLoading() {
+    document.getElementById('loading').classList.remove('active');
+}
+
+// Form submit - Create order
 document.getElementById('mainForm').onsubmit = function(e) {
     e.preventDefault();
+    
     var name = document.getElementById('name').value.trim();
     var dob = document.getElementById('dob').value;
     var tob = document.getElementById('tob').value;
     var pob = document.getElementById('pob').value.trim();
-    if (!name || !dob || !tob || !pob) { showError('Please fill all fields'); return; }
+    
+    if (!name || !dob || !tob || !pob) { 
+        showError('Please fill all fields'); 
+        return; 
+    }
 
     var questions = selectedTags.map(function(t) { return questionMap[t] || ''; }).join(', ');
     var customQ = document.getElementById('customQ').value.trim();
     if (customQ) questions += (questions ? '. ' : '') + customQ;
     if (!questions) questions = 'Complete life reading';
 
-    var userData = { name: name, birthDate: dob, birthTime: tob, birthPlace: pob, language: document.getElementById('language').value, gender: document.getElementById('gender').value, questions: questions };
+    userData = { 
+        name: name, 
+        birthDate: dob, 
+        birthTime: tob, 
+        birthPlace: pob, 
+        language: document.getElementById('language').value, 
+        gender: document.getElementById('gender').value, 
+        questions: questions 
+    };
 
-    // Store in sessionStorage for after payment
-    sessionStorage.setItem('celestial_user', JSON.stringify(userData));
+    showLoading('Creating order...');
 
-    document.getElementById('loading').classList.add('active');
-    document.getElementById('loadingText').textContent = 'Preparing payment...';
-
-    fetch('/api/payment')
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (!data.success) throw new Error(data.message);
-            document.getElementById('amount').textContent = '₹' + data.data.amount;
-            document.getElementById('payNowBtn').href = data.data.urls.upi;
-            document.getElementById('loading').classList.remove('active');
-            document.getElementById('paymentModal').classList.add('active');
-        })
-        .catch(function(err) {
-            document.getElementById('loading').classList.remove('active');
-            showError(err.message || 'Payment error');
-        });
+    // Create Razorpay order
+    fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        hideLoading();
+        if (!data.success) throw new Error(data.message);
+        
+        orderData = data.data;
+        document.getElementById('amount').textContent = '₹' + orderData.amount;
+        document.getElementById('paymentModal').classList.add('active');
+    })
+    .catch(function(err) {
+        hideLoading();
+        showError(err.message || 'Failed to create order');
+    });
 };
 
-document.getElementById('cancelBtn').onclick = function() { document.getElementById('paymentModal').classList.remove('active'); };
-document.getElementById('resendBtn').onclick = function() { if (whatsappUrl) { window.open(whatsappUrl, '_blank'); showToast('WhatsApp opened!'); } };
+// Pay Now button - Open Razorpay
+document.getElementById('payNowBtn').onclick = function() {
+    if (!orderData) return;
+
+    var options = {
+        key: orderData.keyId,
+        amount: orderData.amount * 100,
+        currency: orderData.currency,
+        name: 'Celestial Oracle',
+        description: orderData.description,
+        order_id: orderData.orderId,
+        prefill: {
+            name: userData.name
+        },
+        theme: {
+            color: '#D4AF37'
+        },
+        handler: function(response) {
+            // Payment successful - verify and get reading
+            document.getElementById('paymentModal').classList.remove('active');
+            showLoading('Verifying payment & generating reading...');
+
+            fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    userData: userData
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                hideLoading();
+                if (!data.success) throw new Error(data.message);
+                
+                // Show success modal with reading link
+                document.getElementById('readingLink').href = data.data.readingUrl;
+                document.getElementById('successModal').classList.add('active');
+                showToast('Payment successful!');
+            })
+            .catch(function(err) {
+                hideLoading();
+                showError(err.message || 'Verification failed');
+            });
+        },
+        modal: {
+            ondismiss: function() {
+                showToast('Payment cancelled');
+            }
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+};
+
+// Cancel button
+document.getElementById('cancelBtn').onclick = function() { 
+    document.getElementById('paymentModal').classList.remove('active'); 
+};
+
+// New request button
 document.getElementById('newRequestBtn').onclick = function() {
     document.getElementById('successModal').classList.remove('active');
     document.getElementById('mainForm').reset();
     selectedTags = [];
     document.querySelectorAll('.tag').forEach(function(t) { t.classList.remove('active'); });
-    sessionStorage.removeItem('celestial_user');
-    whatsappUrl = null;
+    userData = null;
+    orderData = null;
 };
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 

@@ -13,7 +13,7 @@ export default function handler(req, res) {
 
     // 1. Load exact details from Environment
     const upiId = process.env.UPI_ID;
-    const upiName = process.env.UPI_NAME || 'COS 5'; // Default from image
+    const upiName = process.env.UPI_NAME || 'Pradeeksha Technologies'; // Default from image
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
     
     // Ensure amount is formatted correctly (e.g. "100.00")

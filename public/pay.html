@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Complete Payment</title>
+<title>Secure Payment</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -24,242 +24,181 @@
         max-width: 400px;
         width: 100%;
         border: 1px solid rgba(212,175,55,0.3);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
     .icon { font-size: 3.5rem; margin-bottom: 10px; }
     h2 { color: #D4AF37; margin-bottom: 5px; font-size: 1.3rem; }
-    .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; }
-    .amount-box {
-        background: linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.1));
-        border: 2px solid #4CAF50;
-        border-radius: 15px;
-        padding: 15px;
-        margin: 20px 0;
-    }
-    .amount-label { font-size: 0.8rem; color: #a5d6a7; margin-bottom: 5px; }
-    .amount { font-size: 2.8rem; font-weight: 700; color: #4CAF50; }
+    .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; }
     
-    /* App Buttons Styles */
-    .app-buttons {
-        display: grid;
-        gap: 10px;
-        margin: 20px 0;
+    .amount-box {
+        background: rgba(76,175,80,0.1);
+        border: 1px solid #4CAF50;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 25px;
     }
+    .amount-label { font-size: 0.75rem; color: #81c784; letter-spacing: 1px; }
+    .amount { font-size: 2.5rem; font-weight: 700; color: #4CAF50; }
+
+    /* --- ONE-TAP BUTTONS --- */
+    .app-buttons { display: grid; gap: 12px; }
+    
     .app-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 14px;
+        padding: 15px;
         border-radius: 12px;
         text-decoration: none;
         font-weight: 600;
         color: white;
-        font-size: 1rem;
+        font-size: 1.1rem;
         transition: transform 0.2s;
         border: none;
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
     }
-    .app-btn:active { transform: scale(0.96); }
-    .gpay { background: #2DA94F; } /* Google Green */
-    .phonepe { background: #5f259f; } /* PhonePe Purple */
-    .paytm { background: #00baf2; color: #fff; } /* Paytm Blue */
-    .bhim { background: #f26522; } /* BHIM Orange */
+    .app-btn:active { transform: scale(0.97); }
     
-    .manual-pay-toggle {
-        font-size: 0.85rem;
-        color: #D4AF37;
-        text-decoration: underline;
-        cursor: pointer;
-        margin-top: 15px;
-        opacity: 0.8;
+    /* Specific Colors */
+    .gpay { 
+        background: #2DA94F; 
+        box-shadow: 0 4px 15px rgba(45, 169, 79, 0.4); 
+    }
+    .phonepe { 
+        background: #5f259f; 
+        box-shadow: 0 4px 15px rgba(95, 37, 159, 0.4); 
+    }
+    .paytm { 
+        background: #00baf2; 
+        box-shadow: 0 4px 15px rgba(0, 186, 242, 0.4); 
+    }
+    .other-upi {
+        background: #f26522;
+        box-shadow: 0 4px 15px rgba(242, 101, 34, 0.4);
     }
 
-    /* Original UPI Box (Hidden by default on mobile) */
-    .upi-box {
-        display: none; /* Hidden initially */
-        background: rgba(0,0,0,0.4);
-        border: 2px dashed #D4AF37;
-        border-radius: 12px;
-        padding: 15px;
-        margin: 20px 0;
-        cursor: pointer;
-    }
-    .upi-label { font-size: 0.75rem; color: #888; margin-bottom: 8px; }
-    .upi-id {
-        font-family: monospace;
-        font-size: 1.1rem;
-        color: #D4AF37;
-        word-break: break-all;
+    /* Desktop View */
+    .desktop-qr { display: none; margin-top: 10px; }
+    .qr-text { font-size: 0.85rem; color: #aaa; margin-bottom: 10px; }
+    .upi-display {
+        background: rgba(0,0,0,0.3);
         padding: 10px;
-        background: rgba(212,175,55,0.1);
         border-radius: 8px;
-    }
-    .copied-badge {
-        display: inline-block;
-        background: #4CAF50;
-        color: #fff;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        margin-top: 10px;
-    }
-    
-    .btn-green { 
-        display: block;
-        width: 100%;
-        padding: 16px 20px;
-        border-radius: 12px;
-        font-weight: 600;
+        font-family: monospace;
+        color: #D4AF37;
         font-size: 1rem;
-        cursor: pointer;
-        text-decoration: none;
-        text-align: center;
-        margin: 20px 0 10px;
-        border: none;
-        background: linear-gradient(135deg, #25D366, #128C7E); 
-        color: #fff; 
+        border: 1px dashed #D4AF37;
+        margin-bottom: 20px;
+        word-break: break-all;
     }
-    .btn-outline {
-        display: block;
-        width: 100%;
-        text-align: center;
-        padding: 10px;
-        background: transparent;
-        color: #aaa;
-        font-size: 0.9rem;
-        text-decoration: none;
+
+    .footer-actions { margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+    .btn-verify { 
+        display: block; width: 100%; padding: 12px;
+        border-radius: 10px; font-weight: 600; font-size: 0.95rem;
+        text-decoration: none; text-align: center;
+        background: rgba(255,255,255,0.1); color: #fff;
+        transition: background 0.2s;
     }
+    .btn-verify:hover { background: rgba(255,255,255,0.15); }
     
-    /* Desktop Warning */
-    .desktop-msg { display: none; color: #aaa; font-size: 0.9rem; margin-bottom: 10px; }
 </style>
 </head>
 <body>
     <div class="card" id="card">
         <div class="icon">💳</div>
         <h2>Complete Payment</h2>
-        <p class="subtitle">Select your payment app</p>
+        <p class="subtitle">Pay safely using your preferred app</p>
         
         <div class="amount-box">
-            <div class="amount-label">AMOUNT TO PAY</div>
+            <div class="amount-label">TOTAL AMOUNT</div>
             <div class="amount" id="amtDisplay">₹100</div>
         </div>
 
-        <p class="desktop-msg" id="desktopMsg">Scan using mobile or copy UPI ID below:</p>
-        
-        <div class="app-buttons" id="appButtons">
+        <div class="app-buttons" id="mobileButtons">
             </div>
 
-        <div class="manual-pay-toggle" id="toggleManual">Show UPI ID / Copy Manually</div>
-        
-        <div class="upi-box" id="upiBox">
-            <div class="upi-label">TAP TO COPY UPI ID</div>
-            <div class="upi-id" id="upiDisplay">loading...</div>
-            <div class="copied-badge" id="copiedBadge">✓ Copied!</div>
+        <div class="desktop-qr" id="desktopView">
+            <p class="qr-text">Scan via mobile or copy UPI ID:</p>
+            <div class="upi-display" id="upiText"></div>
+            <button onclick="copyUPI()" class="app-btn other-upi" style="width:100%;font-size:1rem;">📋 Copy UPI ID</button>
         </div>
-        
-        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;"></div>
-        
-        <a href="/?verify=1" class="btn-green">✅ I Have Paid → Verify on WhatsApp</a>
-        <a href="/" class="btn-outline">Cancel Transaction</a>
+
+        <div class="footer-actions">
+            <a href="/?verify=1" class="btn-verify">✅ I have completed payment</a>
+        </div>
     </div>
 
 <script>
 (function() {
+    // Get parameters from URL
     var params = new URLSearchParams(window.location.search);
-    var pa = params.get("pa");
-    var pn = params.get("pn") || "Celestial Oracle"; // Payee Name
+    var pa = params.get("pa"); // pradeeksha798-1@okhdfcbank
+    var pn = params.get("pn"); // Pradeeksha Technologies
     var am = params.get("am") || "100";
     
+    // Error Handling
     if (!pa) {
-        document.getElementById('card').innerHTML = '<h2 style="color:#f44336">Error</h2><p>Invalid Payment Link</p><a href="/" class="btn-outline">Go Home</a>';
+        document.getElementById('card').innerHTML = '<h3 style="color:#f44336">Link Error</h3><p>Missing payment details</p>';
         return;
     }
     
-    // Display values
-    document.getElementById('upiDisplay').textContent = pa;
+    // Display Data
     document.getElementById('amtDisplay').textContent = '₹' + am;
+    document.getElementById('upiText').textContent = pa;
 
-    // 1. Construct the Universal UPI Intent Link
-    // cu=INR is important. pn (Payee Name) is important for GPay.
-    var upiLink = "upi://pay?pa=" + encodeURIComponent(pa) + 
-                  "&pn=" + encodeURIComponent(pn) + 
-                  "&am=" + am + 
-                  "&cu=INR";
+    // --- CONSTRUCT THE MAGIC LINK ---
+    // 'tr' (Transaction Ref) is optional but 'pn' is often required by GPay
+    var intentLink = "upi://pay?pa=" + encodeURIComponent(pa) + 
+                     "&pn=" + encodeURIComponent(pn) + 
+                     "&am=" + am + 
+                     "&cu=INR"; // Currency is INR
 
-    // 2. Generate Buttons
-    var btnContainer = document.getElementById('appButtons');
+    // Detect Mobile
     var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    var container = document.getElementById('mobileButtons');
+    var desktopView = document.getElementById('desktopView');
 
     if (isMobile) {
-        // GPay Button
+        // 1. Google Pay Button
         var btnGPay = document.createElement('a');
         btnGPay.className = 'app-btn gpay';
-        btnGPay.href = upiLink; // Android handles app selection automatically with generic intent
+        btnGPay.href = intentLink;
         btnGPay.innerHTML = '🔵 Pay with GPay';
-        btnContainer.appendChild(btnGPay);
+        container.appendChild(btnGPay);
 
-        // PhonePe Button
+        // 2. PhonePe Button
         var btnPhonePe = document.createElement('a');
         btnPhonePe.className = 'app-btn phonepe';
-        btnPhonePe.href = upiLink;
+        btnPhonePe.href = intentLink;
         btnPhonePe.innerHTML = '🟣 Pay with PhonePe';
-        btnContainer.appendChild(btnPhonePe);
+        container.appendChild(btnPhonePe);
 
-        // Paytm Button
+        // 3. Paytm Button
         var btnPaytm = document.createElement('a');
         btnPaytm.className = 'app-btn paytm';
-        btnPaytm.href = upiLink;
+        btnPaytm.href = intentLink;
         btnPaytm.innerHTML = '💠 Pay with Paytm';
-        btnContainer.appendChild(btnPaytm);
-        
-        // Other UPI
+        container.appendChild(btnPaytm);
+
+        // 4. Generic/Other
         var btnOther = document.createElement('a');
-        btnOther.className = 'app-btn bhim';
-        btnOther.href = upiLink;
-        btnOther.innerHTML = '🟠 Other UPI App';
-        btnContainer.appendChild(btnOther);
+        btnOther.className = 'app-btn other-upi';
+        btnOther.href = intentLink;
+        btnOther.innerHTML = '🟠 Other UPI Apps';
+        container.appendChild(btnOther);
     } else {
-        // Desktop View: Hide buttons, show copy box automatically
-        document.getElementById('appButtons').style.display = 'none';
-        document.getElementById('upiBox').style.display = 'block';
-        document.getElementById('toggleManual').style.display = 'none';
-        document.getElementById('desktopMsg').style.display = 'block';
-        document.querySelector('.subtitle').textContent = 'Open UPI App on mobile and pay';
+        // Desktop Mode
+        container.style.display = 'none';
+        desktopView.style.display = 'block';
     }
-    
-    // Toggle Manual Copy
-    document.getElementById('toggleManual').onclick = function() {
-        var box = document.getElementById('upiBox');
-        if (box.style.display === 'none' || box.style.display === '') {
-            box.style.display = 'block';
-            this.textContent = 'Hide UPI ID';
-        } else {
-            box.style.display = 'none';
-            this.textContent = 'Show UPI ID / Copy Manually';
-        }
+
+    // Copy Function for Desktop
+    window.copyUPI = function() {
+        navigator.clipboard.writeText(pa).then(() => alert('UPI ID Copied!'));
     };
-    
-    // Copy Functionality
-    function copyUPI() {
-        navigator.clipboard.writeText(pa).then(function() {
-            var badge = document.getElementById('copiedBadge');
-            badge.textContent = '✓ Copied!';
-            badge.style.background = '#4CAF50';
-            badge.style.opacity = '1';
-            setTimeout(function() { badge.style.opacity = '0.7'; }, 2000);
-        }).catch(function() {
-            // Fallback
-            var ta = document.createElement('textarea');
-            ta.value = pa;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            alert("UPI ID Copied: " + pa);
-        });
-    }
-    
-    document.getElementById('upiBox').onclick = copyUPI;
 })();
 </script>
 </body>

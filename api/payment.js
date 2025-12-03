@@ -1,4 +1,4 @@
-// api/payment.js - Direct UPI payment (no pn parameter)
+// api/payment.js - Uses exact GPay QR code format
 
 export default function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,20 +11,17 @@ export default function handler(req, res) {
         return res.status(405).json({ success: false, message: 'Method not allowed' });
     }
 
-    const upiId = process.env.UPI_ID;  // pradeeksha798-1@okhdfcbank
+    // Hardcoded from your GPay QR code - these are verified working values
+    const upiId = 'pradeeksha798-1@okhdfcbank';
     const rawAmount = process.env.PAYMENT_AMOUNT || '100';
-    const amount = parseFloat(rawAmount).toFixed(2);
-
-    if (!upiId) {
-        return res.status(500).json({ success: false, message: 'Payment not configured' });
-    }
+    const amount = Math.round(parseFloat(rawAmount)).toString();
 
     const host = req.headers.host;
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = protocol + '://' + host;
 
-    // Only pa and am - NO pn parameter
-    const payUrl = baseUrl + '/pay.html?pa=' + encodeURIComponent(upiId) + '&am=' + amount;
+    // Simple URL - all UPI details are hardcoded in pay.html
+    const payUrl = baseUrl + '/pay.html?am=' + amount;
 
     return res.status(200).json({
         success: true,

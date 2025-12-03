@@ -82,9 +82,9 @@
 <body>
     <div class="card" id="card">
         <div class="spinner" id="spinner"></div>
-        <h2 id="title">Opening Payment App...</h2>
+        <h2 id="title">Opening GPay...</h2>
         <div class="amount" id="amtDisplay">₹100</div>
-        <p id="subtitle">Redirecting to UPI app</p>
+        <p id="subtitle">Redirecting to payment app</p>
         
         <div id="buttons" style="display:none;">
             <div class="info-box">Tap your preferred payment app:</div>
@@ -100,45 +100,29 @@
 
 <script>
 (function() {
-    // Get URL parameters
     var params = new URLSearchParams(window.location.search);
-    var pa = params.get("pa");
     var am = params.get("am") || "100";
     
-    if (!pa) {
-        document.getElementById('card').innerHTML = '<h2 style="color:#f44336">Error</h2><p>Invalid payment link</p><a href="/" style="color:#D4AF37">← Back</a>';
-        return;
-    }
-    
-    // Display amount
     document.getElementById('amtDisplay').textContent = '₹' + am;
 
-    // --- CORRECT UPI FORMAT ---
-    // Key fixes:
-    // 1. Amount as integer (no decimals)
-    // 2. NO URL encoding for UPI ID (@ is valid in UPI)
-    // 3. Minimal parameters only
+    // EXACT format from your GPay QR code + amount
+    // Original QR: upi://pay?pa=pradeeksha798-1@okhdfcbank&pn=Pradeeksha%20Technologies&aid=uGICAgIDXlPnAVA
     
-    var amount = Math.round(parseFloat(am)); // Integer only, no decimals
+    var upiUrl = "upi://pay?pa=pradeeksha798-1@okhdfcbank&pn=Pradeeksha%20Technologies&aid=uGICAgIDXlPnAVA&am=" + am + "&cu=INR";
     
-    // Build UPI string - DO NOT encode the pa value
-    // Format: upi://pay?pa=xxx@xxx&am=100&cu=INR
-    var upiUrl = "upi://pay?pa=" + pa + "&am=" + amount + "&cu=INR";
-    
-    // Set all button hrefs
+    // Set button hrefs
     document.getElementById('btnGpay').href = upiUrl;
     document.getElementById('btnPhonepe').href = upiUrl;
     document.getElementById('btnPaytm').href = upiUrl;
     document.getElementById('btnOther').href = upiUrl;
 
-    // Check if mobile
     var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isMobile) {
-        // Try to auto-open UPI app
+        // Auto-redirect
         window.location.href = upiUrl;
         
-        // Show buttons after 1.5 seconds as fallback
+        // Show buttons after 1.5s as fallback
         setTimeout(function() {
             document.getElementById('spinner').style.display = 'none';
             document.getElementById('title').textContent = 'Select Payment App';
@@ -146,12 +130,27 @@
             document.getElementById('buttons').style.display = 'block';
         }, 1500);
     } else {
-        // Desktop - show message
         document.getElementById('spinner').style.display = 'none';
-        document.getElementById('title').textContent = 'Mobile Required';
-        document.getElementById('subtitle').innerHTML = 'Please open this page on mobile<br><br>UPI ID: <strong style="color:#D4AF37">' + pa + '</strong>';
+        document.getElementById('title').textContent = 'Open on Mobile';
+        document.getElementById('subtitle').innerHTML = 'UPI payments require mobile device<br><br><strong style="color:#D4AF37">pradeeksha798-1@okhdfcbank</strong>';
     }
 })();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

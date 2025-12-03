@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Secure Payment</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>Processing Payment...</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -19,179 +18,117 @@
     }
     .card {
         background: rgba(255,255,255,0.05);
-        padding: 30px 25px;
+        padding: 40px 30px;
         border-radius: 20px;
         text-align: center;
-        max-width: 420px;
+        max-width: 400px;
         width: 100%;
         border: 1px solid rgba(212,175,55,0.3);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
-    .icon { font-size: 3.5rem; margin-bottom: 10px; }
-    h2 { color: #D4AF37; margin-bottom: 5px; font-size: 1.3rem; }
-    .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; }
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(212,175,55,0.2);
+        border-top-color: #D4AF37;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { color: #D4AF37; margin-bottom: 10px; font-size: 1.3rem; }
+    p { color: #aaa; margin-bottom: 20px; }
+    .amount { font-size: 2.5rem; font-weight: 700; color: #4CAF50; margin: 15px 0; }
     
-    .amount-box {
-        background: rgba(76,175,80,0.1);
-        border: 1px solid #4CAF50;
+    .btn {
+        display: block;
+        width: 100%;
+        padding: 16px;
         border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    .amount-label { font-size: 0.75rem; color: #81c784; letter-spacing: 1px; }
-    .amount { font-size: 2.5rem; font-weight: 700; color: #4CAF50; }
-
-    .qr-section {
-        background: #fff;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 20px;
-        display: inline-block;
-    }
-    #qrcode { display: inline-block; }
-    #qrcode img, #qrcode canvas { border-radius: 8px; }
-    .qr-label {
-        font-size: 0.85rem;
-        color: #1a0a2e;
-        margin-top: 10px;
         font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        text-align: center;
+        margin: 10px 0;
+        border: none;
+        cursor: pointer;
     }
-    .scan-text {
-        font-size: 0.95rem;
-        color: #D4AF37;
-        margin: 15px 0 10px;
+    .btn-gpay { background: #2DA94F; color: white; }
+    .btn-phonepe { background: #5f259f; color: white; }
+    .btn-paytm { background: #00baf2; color: white; }
+    .btn-other { background: #f26522; color: white; }
+    .btn-verify { 
+        background: linear-gradient(135deg, #4CAF50, #388E3C); 
+        color: white;
+        margin-top: 25px;
     }
-
-    .upi-display {
+    .btn:active { transform: scale(0.98); }
+    
+    .divider {
+        color: #666;
+        margin: 20px 0;
+        font-size: 0.85rem;
+    }
+    .desktop-msg {
+        background: rgba(244,67,54,0.1);
+        border: 1px solid rgba(244,67,54,0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #ff9999;
+        display: none;
+    }
+    .upi-box {
         background: rgba(0,0,0,0.3);
-        padding: 12px 15px;
+        padding: 12px;
         border-radius: 10px;
         font-family: monospace;
         color: #D4AF37;
-        font-size: 0.95rem;
         border: 1px dashed #D4AF37;
         margin: 15px 0;
-        word-break: break-all;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
+        display: none;
     }
-    .upi-id { flex: 1; text-align: left; }
     .copy-btn {
         background: #D4AF37;
         color: #000;
         border: none;
-        padding: 8px 15px;
+        padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
-        font-size: 0.8rem;
-        white-space: nowrap;
+        margin-top: 10px;
     }
-    .copy-btn:active { transform: scale(0.95); }
-
-    .app-buttons { display: grid; gap: 12px; margin-top: 15px; }
-    .divider {
-        display: flex;
-        align-items: center;
-        margin: 20px 0 15px;
-        color: #888;
-        font-size: 0.85rem;
-    }
-    .divider::before, .divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: rgba(255,255,255,0.1);
-    }
-    .divider span { padding: 0 15px; }
-    
-    .app-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 14px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 600;
-        color: white;
-        font-size: 1rem;
-        transition: transform 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-    .app-btn:active { transform: scale(0.97); }
-    
-    .gpay { background: #2DA94F; box-shadow: 0 4px 15px rgba(45, 169, 79, 0.4); }
-    .phonepe { background: #5f259f; box-shadow: 0 4px 15px rgba(95, 37, 159, 0.4); }
-    .paytm { background: #00baf2; box-shadow: 0 4px 15px rgba(0, 186, 242, 0.4); }
-    .other-upi { background: #f26522; box-shadow: 0 4px 15px rgba(242, 101, 34, 0.4); }
-
-    .footer-actions { 
-        margin-top: 25px; 
-        border-top: 1px solid rgba(255,255,255,0.1); 
-        padding-top: 20px; 
-    }
-    .btn-verify { 
-        display: block; 
-        width: 100%; 
-        padding: 14px;
-        border-radius: 12px; 
-        font-weight: 600; 
-        font-size: 1rem;
-        text-decoration: none; 
-        text-align: center;
-        background: linear-gradient(135deg, #4CAF50, #388E3C);
-        color: #fff;
-        transition: opacity 0.2s;
-    }
-    .btn-verify:hover { opacity: 0.9; }
-
-    .info-text {
-        font-size: 0.8rem;
-        color: #888;
-        margin-top: 15px;
-        line-height: 1.5;
-    }
-    
-    .error-card { text-align: center; }
-    .error-card h3 { color: #f44336; margin: 15px 0; }
 </style>
 </head>
 <body>
     <div class="card" id="card">
-        <div class="icon">💳</div>
-        <h2>Complete Payment</h2>
-        <p class="subtitle">Scan QR or tap to pay</p>
+        <div class="spinner" id="spinner"></div>
+        <h2 id="title">Opening Payment App...</h2>
+        <div class="amount" id="amtDisplay">₹100</div>
+        <p id="subtitle">Please wait, redirecting to your UPI app</p>
         
-        <div class="amount-box">
-            <div class="amount-label">TOTAL AMOUNT</div>
-            <div class="amount" id="amtDisplay">₹100</div>
+        <!-- Manual buttons (shown if auto-redirect fails) -->
+        <div id="manualButtons" style="display:none;">
+            <a href="#" class="btn btn-gpay" id="btnGpay">🔵 Pay with GPay</a>
+            <a href="#" class="btn btn-phonepe" id="btnPhonepe">🟣 Pay with PhonePe</a>
+            <a href="#" class="btn btn-paytm" id="btnPaytm">💠 Pay with Paytm</a>
+            <a href="#" class="btn btn-other" id="btnOther">🟠 Other UPI App</a>
         </div>
 
-        <div class="qr-section">
-            <div id="qrcode"></div>
-            <div class="qr-label">Scan with any UPI app</div>
+        <!-- Desktop message -->
+        <div class="desktop-msg" id="desktopMsg">
+            ⚠️ UPI payments work on mobile only.<br>
+            Please open this link on your phone.
+        </div>
+        
+        <!-- UPI ID for desktop -->
+        <div class="upi-box" id="upiBox">
+            <span id="upiText"></span>
+            <br>
+            <button class="copy-btn" onclick="copyUPI()">📋 Copy UPI ID</button>
         </div>
 
-        <p class="scan-text">📱 Scan QR code above or copy UPI ID:</p>
-
-        <div class="upi-display">
-            <span class="upi-id" id="upiText"></span>
-            <button class="copy-btn" onclick="copyUPI()">📋 Copy</button>
-        </div>
-
-        <div class="divider"><span>or tap to pay</span></div>
-        <div class="app-buttons" id="mobileButtons"></div>
-
-        <div class="footer-actions">
-            <a href="/?verify=1" class="btn-verify">✅ I have completed payment</a>
-        </div>
-
-        <p class="info-text">
-            After payment, click above button to send verification request via WhatsApp
-        </p>
+        <div class="divider" id="divider" style="display:none;">── After payment ──</div>
+        <a href="/?verify=1" class="btn btn-verify" id="verifyBtn" style="display:none;">✅ I have completed payment</a>
     </div>
 
 <script>
@@ -200,88 +137,58 @@
     var pa = params.get("pa");
     var am = params.get("am") || "100";
     
+    // Error if no UPI ID
     if (!pa) {
-        document.getElementById('card').innerHTML = '<div class="error-card"><div style="font-size:3rem">⚠️</div><h3>Link Error</h3><p>Missing payment details.</p><p style="margin-top:20px"><a href="/" style="color:#D4AF37">← Back to Home</a></p></div>';
+        document.getElementById('card').innerHTML = '<h2 style="color:#f44336">Error</h2><p>Missing payment details</p><a href="/" style="color:#D4AF37">← Back</a>';
         return;
     }
     
     document.getElementById('amtDisplay').textContent = '₹' + am;
     document.getElementById('upiText').textContent = pa;
 
-    // --- UPI STRING WITHOUT pn PARAMETER ---
-    // Only: pa (UPI ID), am (amount), cu (currency)
-    var upiString = "upi://pay?pa=" + encodeURIComponent(pa) + 
-                    "&am=" + am + 
-                    "&cu=INR";
+    // UPI Intent URL - NO pn parameter
+    var upiIntent = "upi://pay?pa=" + encodeURIComponent(pa) + "&am=" + am + "&cu=INR";
 
-    // Generate QR Code
-    try {
-        new QRCode(document.getElementById("qrcode"), {
-            text: upiString,
-            width: 200,
-            height: 200,
-            colorDark: "#1a0a2e",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-        });
-    } catch(e) {
-        document.getElementById("qrcode").innerHTML = '<p style="color:#666;padding:40px;">QR Error</p>';
-    }
+    // Set button hrefs
+    document.getElementById('btnGpay').href = upiIntent;
+    document.getElementById('btnPhonepe').href = upiIntent;
+    document.getElementById('btnPaytm').href = upiIntent;
+    document.getElementById('btnOther').href = upiIntent;
 
-    // Mobile buttons - all use same simple intent (NO pn parameter)
+    // Detect mobile
     var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    var container = document.getElementById('mobileButtons');
 
     if (isMobile) {
-        // GPay
-        var btnGPay = document.createElement('a');
-        btnGPay.className = 'app-btn gpay';
-        btnGPay.href = upiString;
-        btnGPay.innerHTML = '🔵 Pay with GPay';
-        container.appendChild(btnGPay);
-
-        // PhonePe
-        var btnPhonePe = document.createElement('a');
-        btnPhonePe.className = 'app-btn phonepe';
-        btnPhonePe.href = upiString;
-        btnPhonePe.innerHTML = '🟣 Pay with PhonePe';
-        container.appendChild(btnPhonePe);
-
-        // Paytm
-        var btnPaytm = document.createElement('a');
-        btnPaytm.className = 'app-btn paytm';
-        btnPaytm.href = upiString;
-        btnPaytm.innerHTML = '💠 Pay with Paytm';
-        container.appendChild(btnPaytm);
-
-        // Other
-        var btnOther = document.createElement('a');
-        btnOther.className = 'app-btn other-upi';
-        btnOther.href = upiString;
-        btnOther.innerHTML = '🟠 Other UPI Apps';
-        container.appendChild(btnOther);
+        // AUTO-REDIRECT to UPI app immediately
+        window.location.href = upiIntent;
+        
+        // Show manual buttons after 2 seconds (if redirect didn't work)
+        setTimeout(function() {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('title').textContent = 'Select Payment App';
+            document.getElementById('subtitle').textContent = 'Tap your preferred UPI app';
+            document.getElementById('manualButtons').style.display = 'block';
+            document.getElementById('divider').style.display = 'block';
+            document.getElementById('verifyBtn').style.display = 'block';
+        }, 2000);
     } else {
-        container.style.display = 'none';
-        document.querySelector('.divider').style.display = 'none';
+        // Desktop - show message and UPI ID
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('title').textContent = 'Payment';
+        document.getElementById('subtitle').textContent = 'Please use mobile to pay';
+        document.getElementById('desktopMsg').style.display = 'block';
+        document.getElementById('upiBox').style.display = 'block';
+        document.getElementById('divider').style.display = 'block';
+        document.getElementById('verifyBtn').style.display = 'block';
     }
 
+    // Copy UPI function
     window.copyUPI = function() {
         navigator.clipboard.writeText(pa).then(function() {
-            var btn = document.querySelector('.copy-btn');
-            btn.textContent = '✓ Copied!';
-            btn.style.background = '#4CAF50';
+            document.querySelector('.copy-btn').textContent = '✓ Copied!';
             setTimeout(function() {
-                btn.textContent = '📋 Copy';
-                btn.style.background = '#D4AF37';
+                document.querySelector('.copy-btn').textContent = '📋 Copy UPI ID';
             }, 2000);
-        }).catch(function() {
-            var input = document.createElement('input');
-            input.value = pa;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand('copy');
-            document.body.removeChild(input);
-            alert('UPI ID Copied: ' + pa);
         });
     };
 })();

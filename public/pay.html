@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Processing Payment...</title>
+<title>Payment</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -68,34 +68,14 @@
         margin: 20px 0;
         font-size: 0.85rem;
     }
-    .desktop-msg {
-        background: rgba(244,67,54,0.1);
-        border: 1px solid rgba(244,67,54,0.3);
+    .info-box {
+        background: rgba(76,175,80,0.1);
+        border: 1px solid rgba(76,175,80,0.3);
         border-radius: 10px;
-        padding: 15px;
-        margin: 20px 0;
-        color: #ff9999;
-        display: none;
-    }
-    .upi-box {
-        background: rgba(0,0,0,0.3);
         padding: 12px;
-        border-radius: 10px;
-        font-family: monospace;
-        color: #D4AF37;
-        border: 1px dashed #D4AF37;
         margin: 15px 0;
-        display: none;
-    }
-    .copy-btn {
-        background: #D4AF37;
-        color: #000;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        margin-top: 10px;
+        font-size: 0.85rem;
+        color: #a5d6a7;
     }
 </style>
 </head>
@@ -104,110 +84,74 @@
         <div class="spinner" id="spinner"></div>
         <h2 id="title">Opening Payment App...</h2>
         <div class="amount" id="amtDisplay">₹100</div>
-        <p id="subtitle">Please wait, redirecting to your UPI app</p>
+        <p id="subtitle">Redirecting to UPI app</p>
         
-        <!-- Manual buttons (shown if auto-redirect fails) -->
-        <div id="manualButtons" style="display:none;">
-            <a href="#" class="btn btn-gpay" id="btnGpay">🔵 Pay with GPay</a>
-            <a href="#" class="btn btn-phonepe" id="btnPhonepe">🟣 Pay with PhonePe</a>
-            <a href="#" class="btn btn-paytm" id="btnPaytm">💠 Pay with Paytm</a>
+        <div id="buttons" style="display:none;">
+            <div class="info-box">Tap your preferred payment app:</div>
+            <a href="#" class="btn btn-gpay" id="btnGpay">🔵 Google Pay</a>
+            <a href="#" class="btn btn-phonepe" id="btnPhonepe">🟣 PhonePe</a>
+            <a href="#" class="btn btn-paytm" id="btnPaytm">💠 Paytm</a>
             <a href="#" class="btn btn-other" id="btnOther">🟠 Other UPI App</a>
+            
+            <div class="divider">── After payment ──</div>
+            <a href="/?verify=1" class="btn btn-verify">✅ I have completed payment</a>
         </div>
-
-        <!-- Desktop message -->
-        <div class="desktop-msg" id="desktopMsg">
-            ⚠️ UPI payments work on mobile only.<br>
-            Please open this link on your phone.
-        </div>
-        
-        <!-- UPI ID for desktop -->
-        <div class="upi-box" id="upiBox">
-            <span id="upiText"></span>
-            <br>
-            <button class="copy-btn" onclick="copyUPI()">📋 Copy UPI ID</button>
-        </div>
-
-        <div class="divider" id="divider" style="display:none;">── After payment ──</div>
-        <a href="/?verify=1" class="btn btn-verify" id="verifyBtn" style="display:none;">✅ I have completed payment</a>
     </div>
 
 <script>
 (function() {
+    // Get URL parameters
     var params = new URLSearchParams(window.location.search);
     var pa = params.get("pa");
     var am = params.get("am") || "100";
     
-    // Error if no UPI ID
     if (!pa) {
-        document.getElementById('card').innerHTML = '<h2 style="color:#f44336">Error</h2><p>Missing payment details</p><a href="/" style="color:#D4AF37">← Back</a>';
+        document.getElementById('card').innerHTML = '<h2 style="color:#f44336">Error</h2><p>Invalid payment link</p><a href="/" style="color:#D4AF37">← Back</a>';
         return;
     }
     
+    // Display amount
     document.getElementById('amtDisplay').textContent = '₹' + am;
-    document.getElementById('upiText').textContent = pa;
 
-    // UPI Intent URL - NO pn parameter
-    var upiIntent = "upi://pay?pa=" + encodeURIComponent(pa) + "&am=" + am + "&cu=INR";
+    // --- CORRECT UPI FORMAT ---
+    // Key fixes:
+    // 1. Amount as integer (no decimals)
+    // 2. NO URL encoding for UPI ID (@ is valid in UPI)
+    // 3. Minimal parameters only
+    
+    var amount = Math.round(parseFloat(am)); // Integer only, no decimals
+    
+    // Build UPI string - DO NOT encode the pa value
+    // Format: upi://pay?pa=xxx@xxx&am=100&cu=INR
+    var upiUrl = "upi://pay?pa=" + pa + "&am=" + amount + "&cu=INR";
+    
+    // Set all button hrefs
+    document.getElementById('btnGpay').href = upiUrl;
+    document.getElementById('btnPhonepe').href = upiUrl;
+    document.getElementById('btnPaytm').href = upiUrl;
+    document.getElementById('btnOther').href = upiUrl;
 
-    // Set button hrefs
-    document.getElementById('btnGpay').href = upiIntent;
-    document.getElementById('btnPhonepe').href = upiIntent;
-    document.getElementById('btnPaytm').href = upiIntent;
-    document.getElementById('btnOther').href = upiIntent;
-
-    // Detect mobile
-    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Check if mobile
+    var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isMobile) {
-        // AUTO-REDIRECT to UPI app immediately
-        window.location.href = upiIntent;
+        // Try to auto-open UPI app
+        window.location.href = upiUrl;
         
-        // Show manual buttons after 2 seconds (if redirect didn't work)
+        // Show buttons after 1.5 seconds as fallback
         setTimeout(function() {
             document.getElementById('spinner').style.display = 'none';
             document.getElementById('title').textContent = 'Select Payment App';
-            document.getElementById('subtitle').textContent = 'Tap your preferred UPI app';
-            document.getElementById('manualButtons').style.display = 'block';
-            document.getElementById('divider').style.display = 'block';
-            document.getElementById('verifyBtn').style.display = 'block';
-        }, 2000);
+            document.getElementById('subtitle').style.display = 'none';
+            document.getElementById('buttons').style.display = 'block';
+        }, 1500);
     } else {
-        // Desktop - show message and UPI ID
+        // Desktop - show message
         document.getElementById('spinner').style.display = 'none';
-        document.getElementById('title').textContent = 'Payment';
-        document.getElementById('subtitle').textContent = 'Please use mobile to pay';
-        document.getElementById('desktopMsg').style.display = 'block';
-        document.getElementById('upiBox').style.display = 'block';
-        document.getElementById('divider').style.display = 'block';
-        document.getElementById('verifyBtn').style.display = 'block';
+        document.getElementById('title').textContent = 'Mobile Required';
+        document.getElementById('subtitle').innerHTML = 'Please open this page on mobile<br><br>UPI ID: <strong style="color:#D4AF37">' + pa + '</strong>';
     }
-
-    // Copy UPI function
-    window.copyUPI = function() {
-        navigator.clipboard.writeText(pa).then(function() {
-            document.querySelector('.copy-btn').textContent = '✓ Copied!';
-            setTimeout(function() {
-                document.querySelector('.copy-btn').textContent = '📋 Copy UPI ID';
-            }, 2000);
-        });
-    };
 })();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
